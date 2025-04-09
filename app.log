@@ -1,0 +1,89 @@
+
+{"time":"2025-04-07T17:57:51.6453882+01:00","level":"INFO","msg":"Hello!! welcome to ToDo App","name":"Go","version":1.23}
+{"time":"2025-04-07T17:57:51.6464297+01:00","level":"ERROR","msg":"test error"}
+{"time":"2025-04-07T17:57:51.6464297+01:00","level":"DEBUG","msg":"this is debug log"}
+{"time":"2025-04-07T17:57:51.6474651+01:00","level":"ERROR","msg":"Add Task","task":{"task":"test","status":"completed"}}
+{"time":"2025-04-07T18:14:57.6338704+01:00","level":"INFO","msg":"Hello!! welcome to ToDo App","name":"Go","version":1.23}
+{"time":"2025-04-07T18:14:57.6343884+01:00","level":"ERROR","msg":"test error"}
+{"time":"2025-04-07T18:14:57.6343884+01:00","level":"DEBUG","msg":"this is debug log"}
+{"time":"2025-04-07T18:14:57.6455128+01:00","level":"ERROR","msg":"Add Task","task":{"task":"buy","status":"pending"}}
+{"time":"2025-04-07T19:03:53.1701087+01:00","level":"INFO","msg":"Hello!! welcome to ToDo App","name":"Go","version":1.23}
+{"time":"2025-04-07T19:03:53.1706232+01:00","level":"ERROR","msg":"test error"}
+{"time":"2025-04-07T19:03:53.1711426+01:00","level":"DEBUG","msg":"this is debug log"}
+{"time":"2025-04-07T19:03:53.1815913+01:00","level":"ERROR","msg":"Add Task","task":{"task":"buy","status":"pending"},"traceID":"!ERROR:json: unsupported type: func(interface {}) interface {}"}
+{"time":"2025-04-07T19:04:25.1321733+01:00","level":"INFO","msg":"Hello!! welcome to ToDo App","name":"Go","version":1.23}
+{"time":"2025-04-07T19:04:25.1326969+01:00","level":"ERROR","msg":"test error"}
+{"time":"2025-04-07T19:04:25.1326969+01:00","level":"DEBUG","msg":"this is debug log"}
+{"time":"2025-04-07T19:04:25.133726+01:00","level":"ERROR","msg":"Add Task","task":{"task":"buy","status":"pending"},"traceID":"!ERROR:json: unsupported type: func(interface {}) interface {}"}
+{"time":"2025-04-07T19:04:46.0334624+01:00","level":"INFO","msg":"Hello!! welcome to ToDo App","name":"Go","version":1.23}
+{"time":"2025-04-07T19:04:46.0339743+01:00","level":"ERROR","msg":"test error"}
+{"time":"2025-04-07T19:04:46.0339743+01:00","level":"DEBUG","msg":"this is debug log"}
+{"time":"2025-04-07T19:04:46.0350062+01:00","level":"ERROR","msg":"Add Task","task":{"task":"buy","status":"pending"},"traceID":"!ERROR:json: unsupported type: func(interface {}) interface {}"}
+{"time":"2025-04-07T19:05:45.5722797+01:00","level":"INFO","msg":"Hello!! welcome to ToDo App","name":"Go","version":1.23}
+{"time":"2025-04-07T19:05:45.5727906+01:00","level":"ERROR","msg":"test error"}
+{"time":"2025-04-07T19:05:45.5732999+01:00","level":"DEBUG","msg":"this is debug log"}
+{"time":"2025-04-07T19:05:45.57382+01:00","level":"ERROR","msg":"Add Task","task":{"task":"buy","status":"pending"},"traceID":"!ERROR:json: unsupported type: func(interface {}) interface {}"}
+{"time":"2025-04-07T19:11:39.791359+01:00","level":"INFO","msg":"Hello!! welcome to ToDo App","name":"Go","version":1.23}
+{"time":"2025-04-07T19:11:39.7924055+01:00","level":"ERROR","msg":"test error"}
+{"time":"2025-04-07T19:11:39.7929254+01:00","level":"DEBUG","msg":"this is debug log"}
+{"time":"2025-04-07T19:11:39.7939857+01:00","level":"ERROR","msg":"Add Task","task":{"task":"buy","status":"pending"},"traceID":"!ERROR:json: unsupported type: func(interface {}) interface {}"}
+{"time":"2025-04-07T19:14:25.5346457+01:00","level":"INFO","msg":"Hello!! welcome to ToDo App","name":"Go","version":1.23}
+{"time":"2025-04-07T19:14:25.5357033+01:00","level":"ERROR","msg":"test error"}
+{"time":"2025-04-07T19:14:25.5357033+01:00","level":"DEBUG","msg":"this is debug log"}
+{"time":"2025-04-07T19:14:25.5364843+01:00","level":"ERROR","msg":"Add Task","task":{"task":"buy","status":"pending"},"traceID":"!ERROR:json: unsupported type: func(interface {}) interface {}"}
+{"time":"2025-04-07T19:15:37.0507727+01:00","level":"INFO","msg":"Hello!! welcome to ToDo App","name":"Go","version":1.23}
+{"time":"2025-04-07T19:15:37.0512886+01:00","level":"ERROR","msg":"test error"}
+{"time":"2025-04-07T19:15:37.0512886+01:00","level":"DEBUG","msg":"this is debug log"}
+{"time":"2025-04-07T19:15:37.0623669+01:00","level":"ERROR","msg":"Add Task","task":{"task":"buy","status":"pending"},"traceID":"!ERROR:json: unsupported type: func(interface {}) interface {}"}
+{"time":"2025-04-07T19:16:10.765173+01:00","level":"INFO","msg":"Hello!! welcome to ToDo App","name":"Go","version":1.23}
+{"time":"2025-04-07T19:16:10.7659065+01:00","level":"ERROR","msg":"test error"}
+{"time":"2025-04-07T19:16:10.7659065+01:00","level":"DEBUG","msg":"this is debug log"}
+{"time":"2025-04-07T19:16:10.7664451+01:00","level":"ERROR","msg":"Add Task","task":{"task":"buy","status":"pending"},"traceID":"123"}
+{"time":"2025-04-08T09:35:56.8938856+01:00","level":"ERROR","msg":"Add Task","task":{"task":"buy","status":"pending"},"traceID":"123"}
+{"time":"2025-04-08T09:40:06.8081498+01:00","level":"ERROR","msg":"Add Task","task":{"task":"Workout","status":"pending"},"traceID":"123"}
+{"time":"2025-04-08T09:41:35.6299893+01:00","level":"INFO","msg":"Add Task","task":{"task":"Workout","status":"pending"},"traceID":"123"}
+{"time":"2025-04-08T09:49:03.4314559+01:00","level":"INFO","msg":"Add Task","task":"Task Workout is added and has status pending","traceID":"123"}
+{"time":"2025-04-08T10:36:29.5692588+01:00","level":"INFO","msg":"Delete Task","task":{"task":"buy","status":"pending"},"traceID":"123"}
+{"time":"2025-04-08T10:37:10.9158004+01:00","level":"INFO","msg":"Delete Task","task":"Task test is added and has status completed","traceID":"123"}
+{"time":"2025-04-08T10:37:44.7143916+01:00","level":"INFO","msg":"Delete Task","task":"Task  with status ","traceID":"123"}
+{"time":"2025-04-08T11:15:46.9977713+01:00","level":"INFO","msg":"Delete Task","task":"Task  with status ","traceID":"123"}
+{"time":"2025-04-08T11:15:46.9988676+01:00","level":"INFO","msg":"Delete Task","Message:":"Task is not present","traceID":"123"}
+{"time":"2025-04-08T11:16:14.9250295+01:00","level":"INFO","msg":"Delete Task","task":"Task buy with status pending","traceID":"123"}
+{"time":"2025-04-08T12:10:56.9666491+01:00","level":"INFO","msg":"Delete Task","task":"Task- with status-","traceID":"123"}
+{"time":"2025-04-08T12:10:56.967209+01:00","level":"INFO","msg":"Delete Task","Message:":"Task is not present","traceID":"123"}
+{"time":"2025-04-08T12:11:55.2115198+01:00","level":"INFO","msg":"Delete Task","task":"Task-buy with status-pending","traceID":"123"}
+{"time":"2025-04-08T13:09:49.1618891+01:00","level":"INFO","msg":"List all Tasks"}
+{"time":"2025-04-08T13:09:49.1635012+01:00","level":"INFO","msg":"Add Task","task":"Task-water plants with status-pending","traceID":"123"}
+{"time":"2025-04-08T13:11:07.6505831+01:00","level":"INFO","msg":"List all Tasks"}
+{"time":"2025-04-08T13:11:07.6519458+01:00","level":"INFO","msg":"Add Task","task":"Task-water plants with status-pending","traceID":"123"}
+{"time":"2025-04-08T13:12:01.3296472+01:00","level":"INFO","msg":"List all Tasks"}
+{"time":"2025-04-08T13:12:01.3306846+01:00","level":"INFO","msg":"Add Task","task":"Task-water plants with status-pending","traceID":"123"}
+{"time":"2025-04-08T13:13:03.3251047+01:00","level":"INFO","msg":"List all Tasks"}
+{"time":"2025-04-08T13:13:03.3261527+01:00","level":"INFO","msg":"Add Task","task":"Task-water plants with status-pending","traceID":"123"}
+{"time":"2025-04-08T13:13:21.3306879+01:00","level":"INFO","msg":"Add Task","task":"Task-water plants with status-pending","traceID":"123"}
+{"time":"2025-04-08T13:13:36.0983561+01:00","level":"INFO","msg":"List all Tasks"}
+{"time":"2025-04-08T13:13:36.098884+01:00","level":"INFO","msg":"Add Task","task":"Task-water plants with status-pending","traceID":"123"}
+{"time":"2025-04-08T13:13:42.6759153+01:00","level":"INFO","msg":"List all Tasks"}
+{"time":"2025-04-08T13:13:42.6769659+01:00","level":"INFO","msg":"Add Task","task":"Task-water plants with status-pending","traceID":"123"}
+{"time":"2025-04-08T13:29:34.6348433+01:00","level":"INFO","msg":"List all Tasks","!BADKEY":{"Context":{}}}
+{"time":"2025-04-08T13:29:34.6358849+01:00","level":"INFO","msg":"Add Task","task":"Task-water plants with status-pending","traceID":"123"}
+{"time":"2025-04-08T13:43:01.4947462+01:00","level":"INFO","msg":"List all Tasks","!BADKEY":{"Context":{}}}
+{"time":"2025-04-08T13:43:01.4963562+01:00","level":"INFO","msg":"Add Task","task":"Task-water plants with status-pending","traceID":"123"}
+{"time":"2025-04-08T13:53:43.8429806+01:00","level":"INFO","msg":"List all Tasks","!BADKEY":"123"}
+{"time":"2025-04-08T13:53:43.8440923+01:00","level":"INFO","msg":"Add Task","task":"Task-water plants with status-pending","traceID":"123"}
+{"time":"2025-04-08T13:55:11.8088761+01:00","level":"INFO","msg":"List all Tasks","traceID":"123"}
+{"time":"2025-04-08T13:55:11.8098953+01:00","level":"INFO","msg":"Add Task","task":"Task-water plants with status-pending","traceID":"123"}
+{"time":"2025-04-08T13:59:18.3295728+01:00","level":"INFO","msg":"List all Tasks","traceID":"123"}
+{"time":"2025-04-08T13:59:18.3306157+01:00","level":"INFO","msg":"Delete Task","task":"Task- with status-","traceID":"123"}
+{"time":"2025-04-08T14:01:05.0242474+01:00","level":"INFO","msg":"List all Tasks","traceID":"123"}
+{"time":"2025-04-08T14:01:05.0247649+01:00","level":"INFO","msg":"Delete Task","task":"Task-water plants with status-pending","traceID":"123"}
+{"time":"2025-04-08T14:03:25.9342647+01:00","level":"INFO","msg":"List all Tasks","traceID":"123"}
+{"time":"2025-04-08T14:03:25.9353032+01:00","level":"INFO","msg":"Update Task","task":"Task- with status-completed","traceID":"123"}
+{"time":"2025-04-08T14:11:51.4473619+01:00","level":"INFO","msg":"List all Tasks","traceID":"123"}
+{"time":"2025-04-08T14:11:51.4491618+01:00","level":"INFO","msg":"Update Task","task":"Task- with status-completed","traceID":"123"}
+{"time":"2025-04-08T14:13:07.3848199+01:00","level":"INFO","msg":"List all Tasks","traceID":"123"}
+{"time":"2025-04-08T14:13:07.385864+01:00","level":"INFO","msg":"Update Task","task":"Task- with status-completed","traceID":"123"}
+{"time":"2025-04-08T14:13:34.468889+01:00","level":"INFO","msg":"List all Tasks","traceID":"123"}
+{"time":"2025-04-08T14:13:34.4699276+01:00","level":"INFO","msg":"Update Task","task":"Task-new with status-pending","traceID":"123"}
+{"time":"2025-04-08T16:02:46.4716845+01:00","level":"INFO","msg":"List all Tasks","traceID":"123"}
+{"time":"2025-04-08T16:02:46.4727723+01:00","level":"INFO","msg":"Add Task","task":"Task-task1 with status-pending","traceID":"123"}

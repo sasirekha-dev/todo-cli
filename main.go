@@ -8,7 +8,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
-
+	"github.com/google/uuid"
 	"go2.0/models"
 	"go2.0/store"
 )
@@ -29,9 +29,9 @@ func (th *TraceIDHandler) Handle(ctx context.Context, r slog.Record) error{
 }
 
 
-func main() {
+func main1() {
 
-	ctx := context.WithValue(context.Background(), models.TraceID, "12345")
+	ctx := context.WithValue(context.Background(), models.TraceID, uuid.New().String())
 
 	LOG_FILE := os.Getenv("LOG_FILE")
 	file, err := os.OpenFile(LOG_FILE, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
@@ -50,7 +50,7 @@ func main() {
 	slog.SetDefault(logger)
 
 	store.ToDoItems, _ = store.Read(store.Filename, ctx)
-
+	
 	add := flag.String("add", "", "Todo item to add")
 	delete := flag.Int("delete", 0, "Delete a task")
 	update := flag.Int("update", 0, "update a task")
@@ -79,8 +79,13 @@ func main() {
 			fmt.Printf("%d: Task: %s, Status: %s \n", i, store.ToDoItems[i].Task, store.ToDoItems[i].Status)
 		}
 
-	}
-	done:= make(chan struct{})
+	}	
+
+
+
+	
+	
+	done:= make(chan bool)
 	//create a cancel channel
 	cancelChan := make(chan os.Signal, 1)
 	signal.Notify(cancelChan, os.Interrupt)	

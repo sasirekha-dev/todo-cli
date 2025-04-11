@@ -150,3 +150,22 @@
 {"time":"2025-04-11T10:08:22.4236943+01:00","level":"INFO","msg":"List all Tasks","traceID:":"12345"}
 {"time":"2025-04-11T10:08:22.4247265+01:00","level":"INFO","msg":"Saving to file","traceID:":"12345"}
 {"time":"2025-04-11T10:08:22.4252473+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID:":"12345"}
+{"time":"2025-04-11T10:35:40.2874965+01:00","level":"INFO","msg":"Saving to file","traceID:":"75e0b903-367d-42d2-bdd2-b66a955698e5"}
+{"time":"2025-04-11T10:35:40.2880157+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID:":"75e0b903-367d-42d2-bdd2-b66a955698e5"}
+{"time":"2025-04-11T10:35:44.0117332+01:00","level":"INFO","msg":"Received interrupt","traceID:":"75e0b903-367d-42d2-bdd2-b66a955698e5"}
+{"time":"2025-04-11T11:12:58.0665621+01:00","level":"INFO","msg":"List all Tasks","traceID:":"1d2498e4-af8d-44c5-b4cb-8811edf9e9d8"}
+{"time":"2025-04-11T11:12:58.0676339+01:00","level":"INFO","msg":"Saving to file","traceID:":"1d2498e4-af8d-44c5-b4cb-8811edf9e9d8"}
+{"time":"2025-04-11T11:12:58.0676339+01:00","level":"INFO","msg":"Add Task","task":"Task-task1 with status-pending","traceID:":"1d2498e4-af8d-44c5-b4cb-8811edf9e9d8"}
+{"time":"2025-04-11T11:13:04.6501265+01:00","level":"INFO","msg":"Received interrupt","traceID:":"1d2498e4-af8d-44c5-b4cb-8811edf9e9d8"}
+{"time":"2025-04-11T11:46:17.0914356+01:00","level":"INFO","msg":"List all Tasks","traceID:":"e31fe1df-8bba-448f-8829-133945a84cfc"}
+{"time":"2025-04-11T11:46:17.0930494+01:00","level":"INFO","msg":"Saving to file","traceID:":"e31fe1df-8bba-448f-8829-133945a84cfc"}
+{"time":"2025-04-11T11:46:17.0930494+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID:":"e31fe1df-8bba-448f-8829-133945a84cfc"}
+{"time":"2025-04-11T11:46:26.8434968+01:00","level":"INFO","msg":"Received interrupt","traceID:":"e31fe1df-8bba-448f-8829-133945a84cfc"}
+{"time":"2025-04-11T12:08:33.3045046+01:00","level":"INFO","msg":"List all Tasks","traceID:":"6f97b156-598d-4ffe-b9b3-6e0c6cf21943"}
+{"time":"2025-04-11T12:08:33.3055385+01:00","level":"INFO","msg":"Saving to file","traceID:":"6f97b156-598d-4ffe-b9b3-6e0c6cf21943"}
+{"time":"2025-04-11T12:08:33.3055385+01:00","level":"INFO","msg":"Add Task","task":"Task-task1 with status-pending","traceID:":"6f97b156-598d-4ffe-b9b3-6e0c6cf21943"}
+{"time":"2025-04-11T12:08:35.2546709+01:00","level":"INFO","msg":"Received interrupt","traceID:":"6f97b156-598d-4ffe-b9b3-6e0c6cf21943"}
+{"time":"2025-04-11T12:23:38.1957952+01:00","level":"INFO","msg":"List all Tasks","traceID:":"ad48008e-9431-42d7-a3eb-aa07bbbf032a"}
+{"time":"2025-04-11T12:23:38.1968248+01:00","level":"INFO","msg":"Saving to file","traceID:":"ad48008e-9431-42d7-a3eb-aa07bbbf032a"}
+{"time":"2025-04-11T12:23:38.1973452+01:00","level":"INFO","msg":"Add Task","task":"Task-task1 with status-pending","traceID:":"ad48008e-9431-42d7-a3eb-aa07bbbf032a"}
+{"time":"2025-04-11T12:23:50.9349502+01:00","level":"INFO","msg":"Received interrupt","traceID:":"ad48008e-9431-42d7-a3eb-aa07bbbf032a"}

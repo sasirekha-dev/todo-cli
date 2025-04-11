@@ -174,8 +174,8 @@ func TestLoadFile(t *testing.T) {
 }
 
 func TestSaveFile(t *testing.T) {
-	// ctx := context.WithValue(context.Background(), models.TraceID, "123")
-	t.Run("Load File", func(t *testing.T) {
+	ctx := context.WithValue(context.Background(), models.TraceID, "123")
+	t.Run("Save to file", func(t *testing.T) {
 		//setup
 		tempFile, err := os.CreateTemp("", "test_*.json")
 		if err != nil {
@@ -189,7 +189,7 @@ func TestSaveFile(t *testing.T) {
 			2: {Task: "Experiment GoLang", Status: "pending"},
 		}
 		
-		err = store.Save(newData)
+		err = store.Save(newData, ctx)
 		//assert
 		if err != nil {
 			t.Errorf("Save test case failed")

@@ -1,4 +1,5 @@
 package models
 
-type key string
-var TraceID key
+
+type TraceIDKey string
+var TraceID TraceIDKey

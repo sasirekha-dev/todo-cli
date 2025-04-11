@@ -87,3 +87,66 @@
 {"time":"2025-04-08T14:13:34.4699276+01:00","level":"INFO","msg":"Update Task","task":"Task-new with status-pending","traceID":"123"}
 {"time":"2025-04-08T16:02:46.4716845+01:00","level":"INFO","msg":"List all Tasks","traceID":"123"}
 {"time":"2025-04-08T16:02:46.4727723+01:00","level":"INFO","msg":"Add Task","task":"Task-task1 with status-pending","traceID":"123"}
+{"time":"2025-04-10T10:37:02.0345822+01:00","level":"INFO","msg":"List all Tasks","traceID":"123","!BADKEY":null}
+{"time":"2025-04-10T10:47:38.992437+01:00","level":"INFO","msg":"List all Tasks","traceID":"123","!BADKEY":"traceID"}
+{"time":"2025-04-10T10:48:59.2846989+01:00","level":"INFO","msg":"List all Tasks","traceID":"123","traceID":null}
+{"time":"2025-04-10T10:51:09.8273243+01:00","level":"INFO","msg":"List all Tasks","traceID":"123","traceID:":null}
+{"time":"2025-04-10T10:52:21.6908532+01:00","level":"INFO","msg":"List all Tasks","traceID":"123","traceID:":null}
+{"time":"2025-04-10T10:56:44.4152566+01:00","level":"INFO","msg":"List all Tasks","traceID":"12345","traceID:":null}
+{"time":"2025-04-10T12:00:18.0284264+01:00","level":"INFO","msg":"List all Tasks","traceID":{"Context":{}},"traceID:":null}
+{"time":"2025-04-10T12:03:05.6645622+01:00","level":"INFO","msg":"List all Tasks","traceID":{"Context":{}},"traceID:":null}
+{"time":"2025-04-10T12:06:02.9168981+01:00","level":"INFO","msg":"List all Tasks","traceID":{"Context":{}},"traceID:":null}
+{"time":"2025-04-10T12:08:54.0151315+01:00","level":"INFO","msg":"List all Tasks","traceID":{"Context":{}},"traceID:":null}
+{"time":"2025-04-10T12:13:09.2359315+01:00","level":"INFO","msg":"List all Tasks","!BADKEY":"traceID","traceID:":"12345"}
+{"time":"2025-04-10T12:24:33.2279665+01:00","level":"INFO","msg":"List all Tasks","traceID:":"12345"}
+{"time":"2025-04-10T12:27:30.5086535+01:00","level":"INFO","msg":"List all Tasks","traceID:":"12345"}
+{"time":"2025-04-10T12:27:30.509684+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID":{"Context":{}}}
+{"time":"2025-04-10T12:29:08.7017038+01:00","level":"INFO","msg":"List all Tasks","traceID:":"12345"}
+{"time":"2025-04-10T12:29:08.7033299+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID:":"12345"}
+{"time":"2025-04-10T13:22:10.8021009+01:00","level":"INFO","msg":"List all Tasks","traceID:":"12345"}
+{"time":"2025-04-10T13:22:10.8031912+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID:":"12345"}
+{"time":"2025-04-10T13:25:06.2835002+01:00","level":"INFO","source":{"function":"go2.0/store.Read","file":"C:/Users/Rekha.Srinivasan/Go-tutorials/go2.0/store/data_store.go","line":61},"msg":"List all Tasks","traceID:":"12345"}
+{"time":"2025-04-10T13:25:06.2845364+01:00","level":"INFO","source":{"function":"go2.0/store.AddTask","file":"C:/Users/Rekha.Srinivasan/Go-tutorials/go2.0/store/data_store.go","line":72},"msg":"Add Task","task":"Task-buy with status-pending","traceID:":"12345"}
+{"time":"2025-04-10T13:31:16.7948769+01:00","level":"INFO","msg":"List all Tasks","traceID:":"12345"}
+{"time":"2025-04-10T13:31:16.7959203+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID:":"12345"}
+{"time":"2025-04-10T13:39:24.3228991+01:00","level":"INFO","msg":"test","!BADKEY":{"Context":{}}}
+{"time":"2025-04-10T13:39:43.6063851+01:00","level":"INFO","msg":"test","abc":{"Context":{}}}
+{"time":"2025-04-10T13:40:21.9793426+01:00","level":"INFO","msg":"test","abc":"12345"}
+{"time":"2025-04-10T14:36:58.5679397+01:00","level":"INFO","msg":"List all Tasks","traceID:":"12345"}
+{"time":"2025-04-10T14:37:19.7588073+01:00","level":"INFO","msg":"Received Interrupt %sinterrupt","traceID:":"12345"}
+{"time":"2025-04-10T14:38:19.6541949+01:00","level":"INFO","msg":"List all Tasks","traceID:":"12345"}
+{"time":"2025-04-10T14:38:19.6552453+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID:":"12345"}
+{"time":"2025-04-10T14:38:27.1772154+01:00","level":"INFO","msg":"Received interrupt","traceID:":"12345"}
+{"time":"2025-04-10T14:55:56.5130659+01:00","level":"INFO","msg":"List all Tasks","traceID:":"12345"}
+{"time":"2025-04-10T14:55:56.5141311+01:00","level":"INFO","msg":"Saving to file","traceID:":"12345"}
+{"time":"2025-04-10T14:55:56.5141311+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID:":"12345"}
+{"time":"2025-04-10T15:03:46.3627428+01:00","level":"INFO","msg":"List all Tasks","traceID:":"12345"}
+{"time":"2025-04-10T15:03:46.3637821+01:00","level":"INFO","msg":"Saving to file","traceID:":"12345"}
+{"time":"2025-04-10T15:03:46.3642973+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID:":"12345"}
+{"time":"2025-04-10T15:05:12.3552617+01:00","level":"INFO","msg":"List all Tasks","traceID:":"12345"}
+{"time":"2025-04-10T15:05:12.3563616+01:00","level":"INFO","msg":"Saving to file","traceID:":"12345"}
+{"time":"2025-04-10T15:05:12.3568808+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID:":"12345"}
+{"time":"2025-04-10T15:07:11.3654535+01:00","level":"INFO","msg":"List all Tasks","traceID:":"12345"}
+{"time":"2025-04-10T15:07:11.3664894+01:00","level":"INFO","msg":"Saving to file","traceID:":"12345"}
+{"time":"2025-04-10T15:07:11.3670073+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID:":"12345"}
+{"time":"2025-04-10T15:11:14.466193+01:00","level":"INFO","msg":"List all Tasks","traceID:":"12345"}
+{"time":"2025-04-10T15:11:14.4672322+01:00","level":"INFO","msg":"Saving to file","traceID:":"12345"}
+{"time":"2025-04-10T15:11:14.4672322+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID:":"12345"}
+{"time":"2025-04-10T15:15:22.6730244+01:00","level":"INFO","msg":"Saving to file","traceID:":"12345"}
+{"time":"2025-04-10T15:15:22.6740602+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID:":"12345"}
+{"time":"2025-04-11T09:59:45.7617794+01:00","level":"INFO","msg":"List all Tasks","traceID:":"12345"}
+{"time":"2025-04-11T09:59:45.7628553+01:00","level":"INFO","msg":"Saving to file","traceID:":"12345"}
+{"time":"2025-04-11T09:59:45.7628553+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID:":"12345"}
+{"time":"2025-04-11T10:00:05.6174047+01:00","level":"INFO","msg":"Received interrupt","traceID:":"12345"}
+{"time":"2025-04-11T10:01:34.8120854+01:00","level":"INFO","msg":"List all Tasks","traceID:":"12345"}
+{"time":"2025-04-11T10:01:34.8131182+01:00","level":"INFO","msg":"Saving to file","traceID:":"12345"}
+{"time":"2025-04-11T10:01:34.8131182+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID:":"12345"}
+{"time":"2025-04-11T10:02:49.2563028+01:00","level":"INFO","msg":"List all Tasks","traceID:":"12345"}
+{"time":"2025-04-11T10:02:49.2573508+01:00","level":"INFO","msg":"Saving to file","traceID:":"12345"}
+{"time":"2025-04-11T10:02:49.2573508+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID:":"12345"}
+{"time":"2025-04-11T10:08:12.6016245+01:00","level":"INFO","msg":"List all Tasks","traceID:":"12345"}
+{"time":"2025-04-11T10:08:12.6026916+01:00","level":"INFO","msg":"Saving to file","traceID:":"12345"}
+{"time":"2025-04-11T10:08:12.6032089+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID:":"12345"}
+{"time":"2025-04-11T10:08:22.4236943+01:00","level":"INFO","msg":"List all Tasks","traceID:":"12345"}
+{"time":"2025-04-11T10:08:22.4247265+01:00","level":"INFO","msg":"Saving to file","traceID:":"12345"}
+{"time":"2025-04-11T10:08:22.4252473+01:00","level":"INFO","msg":"Add Task","task":"Task-buy with status-pending","traceID:":"12345"}

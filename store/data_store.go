@@ -7,8 +7,6 @@ import (
 	"log"
 	"log/slog"
 	"os"
-
-	"go2.0/models"
 )
 
 var Filename = "list.json"
@@ -26,7 +24,7 @@ func (t ToDoItem) LogValue() slog.Value {
 	return slog.StringValue(fmt.Sprintf("Task-%s with status-%s", t.Task, t.Status))
 }
 
-func Save(data map[int]ToDoItem) error{
+func Save(data map[int]ToDoItem, ctx context.Context) error{
 	file, err := os.Create(Filename)
 	if err != nil {
 		log.Fatal("failed to create file")
@@ -37,6 +35,7 @@ func Save(data map[int]ToDoItem) error{
 		log.Fatalf("Failed to write to file: %v", err)
 		return errorMsg("Not able to save")
 	}
+	slog.InfoContext(ctx, "Saving to file")
 	return nil
 }
 
@@ -59,7 +58,8 @@ func Read(Filename string, ctx context.Context) (map[int]ToDoItem, error) {
 		}
 		log.Fatalf("Failed to read from file: %v", err)
 	}
-	slog.Info("List all Tasks", "traceID", ctx.Value(models.TraceID))
+	slog.InfoContext(ctx, "List all Tasks")
+
 	return data, err
 }
 
@@ -69,8 +69,8 @@ func AddTask(insertData string, status string, ctx context.Context) {
 	if insertData != "" && status != "" {
 		newToDoItem := ToDoItem{insertData, status}
 		ToDoItems[totalItems+1] = newToDoItem
-		Save(ToDoItems)
-		slog.Info("Add Task", "task", newToDoItem, "traceID", ctx.Value(models.TraceID))
+		Save(ToDoItems, ctx)
+		slog.InfoContext(ctx, "Add Task", "task", newToDoItem)
 	}
 }
 
@@ -84,10 +84,10 @@ func DeleteTask(taskNumber int, file_content map[int]ToDoItem, ctx context.Conte
 		if key_present {
 			del_task := file_content[taskNumber]
 			delete(file_content, taskNumber)
-			Save(file_content)
-			slog.Info("Delete Task", "task", del_task, "traceID", ctx.Value(models.TraceID))
+			Save(file_content, ctx)
+			slog.InfoContext(ctx, "Delete Task", "task", del_task)
 		} else {
-			slog.Info("Delete Task", "Message:", "Task is not present", "traceID", ctx.Value(models.TraceID))
+			slog.InfoContext(ctx, "Delete Task", "Message:", "Task is not present")
 			return errorMsg("Out of limit index")
 		}		
 	}
@@ -109,8 +109,8 @@ func UpdateTask(task string, status string, index int, ctx context.Context) erro
 			return errorMsg("Out of range")
 		}
 		ToDoItems[index] = update_item
-		Save(ToDoItems)
-		slog.Info("Update Task", "task", ToDoItem{task, status}, "traceID", ctx.Value(models.TraceID))
+		Save(ToDoItems, ctx)
+		slog.InfoContext(ctx, "Update Task", "task", ToDoItem{task, status})
 		
 	}
 	return nil

@@ -7,13 +7,32 @@ import (
 	"io"
 	"log/slog"
 	"os"
-	"go2.0/store"
+	"os/signal"
+
 	"go2.0/models"
+	"go2.0/store"
 )
+
+// create a wrapper around slog.handler
+type TraceIDHandler struct{
+	slog.Handler
+}
+
+
+func (th *TraceIDHandler) Handle(ctx context.Context, r slog.Record) error{
+	//get the value
+	traceID := ctx.Value(models.TraceID)
+	if trace_id, ok := traceID.(string); ok{
+		r.Add(slog.String("traceID:", trace_id))
+	}
+	return th.Handler.Handle(ctx, r)
+}
 
 
 func main() {
-	ctx := context.WithValue(context.Background(), models.TraceID, "123")
+
+	ctx := context.WithValue(context.Background(), models.TraceID, "12345")
+
 	LOG_FILE := os.Getenv("LOG_FILE")
 	file, err := os.OpenFile(LOG_FILE, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
@@ -25,7 +44,9 @@ func main() {
 		// AddSource: true,
 		Level: slog.LevelDebug,
 	}
-	logger := slog.New(slog.NewJSONHandler(w, handlerOpts))
+	jsonHandler := slog.NewJSONHandler(w, handlerOpts)
+	NewHandler := &TraceIDHandler{jsonHandler}
+	logger := slog.New(NewHandler)
 	slog.SetDefault(logger)
 
 	store.ToDoItems, _ = store.Read(store.Filename, ctx)
@@ -53,11 +74,25 @@ func main() {
 		if err != nil {
 			fmt.Println(err)
 		}
-	}
+	default:
+		for i := range store.ToDoItems {
+			fmt.Printf("%d: Task: %s, Status: %s \n", i, store.ToDoItems[i].Task, store.ToDoItems[i].Status)
+		}
 
-	for i := range store.ToDoItems {
-		fmt.Printf("%d: Task: %s, Status: %s \n", i, store.ToDoItems[i].Task, store.ToDoItems[i].Status)
 	}
+	done:= make(chan struct{})
+	//create a cancel channel
+	cancelChan := make(chan os.Signal, 1)
+	signal.Notify(cancelChan, os.Interrupt)	
+	
+	go func(){
+		fmt.Println("In Go Routine")		
+		s:= <-cancelChan				
+		slog.InfoContext(ctx, "Received "+s.String())		
+		close(done)
+		fmt.Println("Go routine ended")
+	}()	
+	<-done
 
 }
 

@@ -14,7 +14,6 @@ func hello(w http.ResponseWriter, r *http.Request){
 func main(){
 	fmt.Println("Server starting...")
 
-
 	http.HandleFunc("/home", hello)
 	fs := http.FileServer(http.Dir("about"))
 	http.Handle("/about/", http.StripPrefix("/about/", fs))

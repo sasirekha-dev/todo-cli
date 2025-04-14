@@ -8,9 +8,10 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+
 	"github.com/google/uuid"
-	"go2.0/models"
-	"go2.0/store"
+	"github.com/sasirekha-dev/go2.0/models"
+	"github.com/sasirekha-dev/go2.0/store"
 )
 
 // create a wrapper around slog.handler
@@ -29,7 +30,7 @@ func (th *TraceIDHandler) Handle(ctx context.Context, r slog.Record) error{
 }
 
 
-func main1() {
+func main() {
 
 	ctx := context.WithValue(context.Background(), models.TraceID, uuid.New().String())
 
@@ -75,14 +76,12 @@ func main1() {
 			fmt.Println(err)
 		}
 	default:
+		fmt.Println("Listing the items...")
 		for i := range store.ToDoItems {
 			fmt.Printf("%d: Task: %s, Status: %s \n", i, store.ToDoItems[i].Task, store.ToDoItems[i].Status)
 		}
 
 	}	
-
-
-
 	
 	
 	done:= make(chan bool)

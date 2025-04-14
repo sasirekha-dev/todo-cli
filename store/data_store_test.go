@@ -6,8 +6,9 @@ import (
 	"os"
 	"reflect"
 	"testing"
-	"go2.0/models"
-	"go2.0/store"
+
+	"github.com/sasirekha-dev/go2.0/models"
+	"github.com/sasirekha-dev/go2.0/store"
 )
 
 func TestAddTask(t *testing.T) {

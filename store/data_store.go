@@ -7,9 +7,10 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"path/filepath"
 )
 
-var Filename = "list.json"
+var Filename = filepath.Join("database","list.json")
 
 type ToDoItem struct {
 	Task   string `json:"task"`
@@ -25,6 +26,7 @@ func (t ToDoItem) LogValue() slog.Value {
 }
 
 func Save(data map[int]ToDoItem, ctx context.Context) error{
+
 	file, err := os.Create(Filename)
 	if err != nil {
 		log.Fatal("failed to create file")
@@ -35,7 +37,7 @@ func Save(data map[int]ToDoItem, ctx context.Context) error{
 		log.Fatalf("Failed to write to file: %v", err)
 		return errorMsg("Not able to save")
 	}
-	slog.InfoContext(ctx, "Saving to file")
+	slog.InfoContext(ctx, "Saving to file", "Filename", Filename)
 	return nil
 }
 
@@ -63,15 +65,20 @@ func Read(Filename string, ctx context.Context) (map[int]ToDoItem, error) {
 	return data, err
 }
 
-func AddTask(insertData string, status string, ctx context.Context) {
+func AddTask(insertData string, status string, ctx context.Context) error{
+	fmt.Println("In Add task ...")
 	// get length of the list
 	totalItems := len(ToDoItems)
 	if insertData != "" && status != "" {
 		newToDoItem := ToDoItem{insertData, status}
 		ToDoItems[totalItems+1] = newToDoItem
-		Save(ToDoItems, ctx)
+		err := Save(ToDoItems, ctx)
+		if err!=nil{
+			return err
+		}
 		slog.InfoContext(ctx, "Add Task", "task", newToDoItem)
 	}
+	return nil
 }
 
 func (error_msg errorMsg) Error() string {

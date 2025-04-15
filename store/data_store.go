@@ -8,6 +8,8 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+
+	// "github.com/sasirekha-dev/go2.0/models"
 )
 
 var Filename = filepath.Join("database","list.json")
@@ -67,6 +69,7 @@ func Read(Filename string, ctx context.Context) (map[int]ToDoItem, error) {
 
 func AddTask(insertData string, status string, ctx context.Context) error{
 	fmt.Println("In Add task ...")
+	ToDoItems, _ = Read(Filename, ctx)
 	// get length of the list
 	totalItems := len(ToDoItems)
 	if insertData != "" && status != "" {
@@ -102,6 +105,9 @@ func DeleteTask(taskNumber int, file_content map[int]ToDoItem, ctx context.Conte
 }
 
 func UpdateTask(task string, status string, index int, ctx context.Context) error {
+	fmt.Println("Trace id....")
+	fmt.Println(ctx)
+	ToDoItems, _ = Read(Filename, ctx)
 	if index > 0 {
 		update_item, exists := ToDoItems[index]
 		if exists {

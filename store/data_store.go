@@ -96,6 +96,7 @@ func DeleteTask(taskNumber int, file_content map[int]ToDoItem, ctx context.Conte
 			delete(file_content, taskNumber)
 			Save(file_content, ctx)
 			slog.InfoContext(ctx, "Delete Task", "task", del_task)
+			log.Print(ctx)
 		} else {
 			slog.InfoContext(ctx, "Delete Task", "Message:", "Task is not present")
 			return errorMsg("Out of limit index")

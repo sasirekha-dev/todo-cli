@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+<head>
+<title>TODO application</title>
+</head>
+<body>
+    <h1>List of tasks added</h1> 
+    <ol>
+        {{range $id, $item := .}}
+        <li>
+            {{$item.Task}} - {{$item.Status}}
+        </li>
+        {{end}}
+    </ol>
+    
+</body>
+</html>

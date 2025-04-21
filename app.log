@@ -169,3 +169,5 @@
 {"time":"2025-04-11T12:23:38.1968248+01:00","level":"INFO","msg":"Saving to file","traceID:":"ad48008e-9431-42d7-a3eb-aa07bbbf032a"}
 {"time":"2025-04-11T12:23:38.1973452+01:00","level":"INFO","msg":"Add Task","task":"Task-task1 with status-pending","traceID:":"ad48008e-9431-42d7-a3eb-aa07bbbf032a"}
 {"time":"2025-04-11T12:23:50.9349502+01:00","level":"INFO","msg":"Received interrupt","traceID:":"ad48008e-9431-42d7-a3eb-aa07bbbf032a"}
+{"time":"2025-04-21T15:21:22.5163324+01:00","level":"INFO","msg":"List all Tasks","traceID:":"1d593aae-7134-4bcc-ab77-2d10d13e11ec"}
+{"time":"2025-04-21T15:21:33.4439675+01:00","level":"INFO","msg":"Received interrupt","traceID:":"1d593aae-7134-4bcc-ab77-2d10d13e11ec"}

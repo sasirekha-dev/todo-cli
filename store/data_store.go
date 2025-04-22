@@ -43,6 +43,44 @@ func Save(data map[int]ToDoItem, ctx context.Context) error{
 	return nil
 }
 
+func Load() map[int]ToDoItem{
+	var data map[int]ToDoItem
+	file, err := os.Open(Filename)
+	if err != nil {
+		file, err := os.Create(Filename)
+		if err != nil {
+			log.Fatal("error creating file")
+		}
+		defer file.Close()
+		return make(map[int]ToDoItem)
+	}
+	defer file.Close()
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&data); err != nil {
+		if err.Error() == "EOF" {
+			return make(map[int]ToDoItem)
+		}
+		log.Fatalf("Failed to read from file: %v", err)
+	}
+
+	return data
+}
+
+func SaveToFile(data map[int]ToDoItem) {
+	file, err := os.Create(Filename)
+	if err != nil {
+		log.Fatal("failed to create file")
+	}
+	defer file.Close()
+	encoder := json.NewEncoder(file)
+	if err := encoder.Encode(&data); err != nil {
+		log.Fatalf("Failed to write to file: %v", err)
+		return
+	}	
+	return
+}
+
+
 func Read(Filename string, ctx context.Context) (map[int]ToDoItem, error) {
 	var data map[int]ToDoItem
 	file, err := os.Open(Filename)
@@ -79,6 +117,22 @@ func AddTask(insertData string, status string, ctx context.Context) error{
 		if err!=nil{
 			return err
 		}
+		slog.InfoContext(ctx, "Add Task", "task", newToDoItem)
+	}
+	return nil
+}
+
+func Add(insertData string, status string, ToDoItems map[int]ToDoItem, ctx context.Context) error{
+	fmt.Println("In Add task ...")
+	// get length of the list
+	totalItems := len(ToDoItems)
+	if insertData != "" && status != "" {
+		newToDoItem := ToDoItem{insertData, status}
+		ToDoItems[totalItems+1] = newToDoItem
+		// err := Save(ToDoItems, ctx)
+		// if err!=nil{
+		// 	return err
+		// }
 		slog.InfoContext(ctx, "Add Task", "task", newToDoItem)
 	}
 	return nil
@@ -124,6 +178,28 @@ func UpdateTask(task string, status string, index int, ctx context.Context) erro
 		}
 		ToDoItems[index] = update_item
 		Save(ToDoItems, ctx)
+		slog.InfoContext(ctx, "Update Task", "task", ToDoItem{task, status})
+		
+	}
+	return nil
+}
+
+func Update(task string, status string, index int, ToDoItems map[int]ToDoItem, ctx context.Context) error {
+	
+	if index > 0 {
+		update_item, exists := ToDoItems[index]
+		if exists {
+			if task == "" {
+				update_item.Status = status
+			} else if status == "" {
+				update_item.Task = task
+			} else {
+				update_item = ToDoItem{Task: task, Status: status}
+			}
+		} else{
+			return errorMsg("Out of range")
+		}
+		ToDoItems[index] = update_item
 		slog.InfoContext(ctx, "Update Task", "task", ToDoItem{task, status})
 		
 	}

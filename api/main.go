@@ -19,6 +19,18 @@ import (
 	"github.com/sasirekha-dev/go2.0/store"
 )
 
+var requests chan apiRequest
+var done chan struct{}
+
+type apiRequest struct {
+	verb   string
+	task   string
+	status string
+	taskID int
+	resp   chan map[int]store.ToDoItem
+	ctx context.Context
+}
+
 func hello(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintf(w, "hello\n %s", r.URL.Path[1:])
@@ -37,10 +49,12 @@ func addTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	err = store.AddTask(AddRequest.Task, AddRequest.Status, r.Context())
-	if err != nil {
-		http.Error(w, "not able to save", http.StatusInternalServerError)
-	}
+	// err = store.AddTask(AddRequest.Task, AddRequest.Status, r.Context())
+	// if err != nil {
+	// 	http.Error(w, "not able to save", http.StatusInternalServerError)
+	// }
+	requests <- apiRequest{verb: http.MethodPost, task: AddRequest.Task,
+		status: AddRequest.Status, ctx: r.Context()}
 }
 
 func deleteTask(w http.ResponseWriter, r *http.Request) {
@@ -49,20 +63,21 @@ func deleteTask(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Could identify as DELETE request")
 		return
 	}
-	ToDoItems, err := store.Read(store.Filename, r.Context())
-	if err != nil {
+	// ToDoItems, err := store.Read(store.Filename, r.Context())
+	// if err != nil {
 
-	}
+	// }
 	queryString, found := strings.CutPrefix(r.URL.RawQuery, "id=")
 	if !found {
 		http.Error(w, "Error in Request", http.StatusBadRequest)
 	}
 	item_delete, _ := strconv.Atoi(queryString)
-
-	err = store.DeleteTask(item_delete, ToDoItems, r.Context())
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	log.Printf("item to delete = %d", item_delete)
+	// err = store.DeleteTask(item_delete, ToDoItems, r.Context())
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// }
+	requests <- apiRequest{verb: http.MethodDelete, taskID: item_delete}
 }
 
 func updateTask(w http.ResponseWriter, r *http.Request) {
@@ -80,10 +95,12 @@ func updateTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	err = store.UpdateTask(updateRequest.Task, updateRequest.Status, updateRequest.Index, r.Context())
-	if err != nil {
-		http.Error(w, "not able to save", http.StatusInternalServerError)
-	}
+	// err = store.UpdateTask(updateRequest.Task, updateRequest.Status, updateRequest.Index, r.Context())
+	// if err != nil {
+	// 	http.Error(w, "not able to save", http.StatusInternalServerError)
+	// }
+	requests <- apiRequest{verb: http.MethodPut, task: updateRequest.Task,
+		status: updateRequest.Status, taskID: updateRequest.Index, ctx: r.Context()}
 
 }
 
@@ -92,12 +109,13 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Could identify as GET request")
 		return
 	}
-	tasks, err := store.Read(store.Filename, r.Context())
-	if err != nil {
-		slog.Error("list operation from database failed")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
+	// tasks, err := store.Read(store.Filename, r.Context())
+	// if err != nil {
+	// 	slog.Error("list operation from database failed")
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// }
+	tasks := make(chan map[int]store.ToDoItem)
+	requests <- apiRequest{verb: http.MethodGet, resp: tasks}
 	tmp, e := template.ParseFiles("api/template/template.html")
 	if e != nil {
 		log.Printf("Error parse file- %v", e)
@@ -134,10 +152,50 @@ func (th *TraceIDHandle) Handle(ctx context.Context, r slog.Record) error {
 	return th.Handler.Handle(ctx, r)
 }
 
+func startActor() {
+	log.Println("starting Actor")
+	requests = make(chan apiRequest)
+	go processRequests(requests)
+}
+
+func processRequests(requests <-chan apiRequest) {
+	done = make(chan struct{})
+	ToDoItems := store.Load()
+	go func() {
+		defer close(done)
+		defer store.SaveToFile(ToDoItems)
+		defer log.Print("Exiting the process go routine...")
+		for req := range requests {
+			switch req.verb {
+			case http.MethodDelete:
+				log.Println("delete request received")
+				index := req.taskID
+				delete(ToDoItems, index)
+				store.SaveToFile(ToDoItems)
+			case http.MethodGet:
+				log.Println("get request received")
+				store.Load()
+				fmt.Println(req)
+			case http.MethodPost:
+				log.Println("Post request received")
+				store.Add(req.task, req.status, ToDoItems, req.ctx)
+				store.SaveToFile(ToDoItems)
+			case http.MethodPut:
+				fmt.Println("put request received")
+				store.Update(req.task, req.status, req.taskID, ToDoItems, req.ctx)
+				store.SaveToFile(ToDoItems)
+			default:
+				fmt.Println("default case")
+
+			}
+		}
+	}()
+}
+
 func main() {
 	handlerOpts := &slog.HandlerOptions{
 		// AddSource: true,
-		Level:     slog.LevelDebug,
+		Level: slog.LevelDebug,
 	}
 	jsonHandler := slog.NewJSONHandler(os.Stderr, handlerOpts)
 	NewHandler := &TraceIDHandle{jsonHandler}
@@ -160,15 +218,19 @@ func main() {
 	mux.Handle("/about/", http.StripPrefix("/about/", fs))
 
 	server := &http.Server{Addr: ":8080", Handler: TraceIDHandler(mux)}
-	quit:= make(chan os.Signal,1)
+
+	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
-	go func(){
-		log.Print("In Go Routine....")
+	startActor()
+	go func() {
 		err := server.ListenAndServe()
 		if err != nil {
 			slog.Error("Server error")
 		}
 	}()
+
 	<-quit
+	close(requests)
+	<-done
 	log.Printf("Received shutdown on ctrl+c")
 }

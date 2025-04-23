@@ -27,14 +27,10 @@ type apiRequest struct {
 	task   string
 	status string
 	taskID int
-	resp   chan map[int]store.ToDoItem
+	resp   chan any
 	ctx context.Context
 }
 
-func hello(w http.ResponseWriter, r *http.Request) {
-
-	fmt.Fprintf(w, "hello\n %s", r.URL.Path[1:])
-}
 
 func addTask(w http.ResponseWriter, r *http.Request) {
 
@@ -109,13 +105,17 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Could identify as GET request")
 		return
 	}
-	// tasks, err := store.Read(store.Filename, r.Context())
-	// if err != nil {
-	// 	slog.Error("list operation from database failed")
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// }
-	tasks := make(chan map[int]store.ToDoItem)
-	requests <- apiRequest{verb: http.MethodGet, resp: tasks}
+
+	responseChan := make(chan any)
+	requests <- apiRequest{verb: http.MethodGet, resp: responseChan}
+	result := <- responseChan
+	tasks, ok := result.(map[int]store.ToDoItem)
+	if !ok{
+		log.Println("Error in list received")
+		http.Error(w, "Internal Server error", http.StatusInternalServerError)
+		return
+	}
+	
 	tmp, e := template.ParseFiles("api/template/template.html")
 	if e != nil {
 		log.Printf("Error parse file- %v", e)
@@ -123,9 +123,9 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	error := tmp.Execute(w, tasks)
-	if error != nil {
-		log.Printf("Error Execute file- %v", error)
+	err := tmp.Execute(w, tasks)
+	if err != nil {
+		log.Printf("Error Execute file- %v", err)
 		// slog.Error("Failed to parse template file")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -160,33 +160,33 @@ func startActor() {
 
 func processRequests(requests <-chan apiRequest) {
 	done = make(chan struct{})
-	ToDoItems := store.Load()
+	// Open database connection
+	file := store.Open()	
 	go func() {
-		defer close(done)
-		defer store.SaveToFile(ToDoItems)
+		defer close(done)	
+		defer store.Close(file) //Closes the database connection	
 		defer log.Print("Exiting the process go routine...")
 		for req := range requests {
 			switch req.verb {
-			case http.MethodDelete:
+			case http.MethodDelete:				
 				log.Println("delete request received")
 				index := req.taskID
-				delete(ToDoItems, index)
-				store.SaveToFile(ToDoItems)
+				store.DeleteTask(index, file, req.ctx)
+				// store.SaveToFile(store.Load(file))
 			case http.MethodGet:
 				log.Println("get request received")
-				store.Load()
-				fmt.Println(req)
+				tasks, _:= store.Read(file, req.ctx)
+				req.resp <- tasks
 			case http.MethodPost:
 				log.Println("Post request received")
-				store.Add(req.task, req.status, ToDoItems, req.ctx)
-				store.SaveToFile(ToDoItems)
+				store.Add(req.task, req.status,file, req.ctx)
+				// store.SaveToFile(ToDoItems)
 			case http.MethodPut:
-				fmt.Println("put request received")
-				store.Update(req.task, req.status, req.taskID, ToDoItems, req.ctx)
-				store.SaveToFile(ToDoItems)
+				log.Println("put request received")
+				store.Update(req.task, req.status, req.taskID, file, req.ctx)
+				// store.SaveToFile(ToDoItems)
 			default:
-				fmt.Println("default case")
-
+				log.Printf("Unidentifiable http method")
 			}
 		}
 	}()
@@ -205,7 +205,6 @@ func main() {
 	fmt.Println("Server starting...")
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /home", hello)
 	mux.HandleFunc("POST /add", addTask)
 	mux.HandleFunc("DELETE /delete", deleteTask)
 	mux.HandleFunc("PUT /update", updateTask)

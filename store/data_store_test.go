@@ -12,6 +12,12 @@ import (
 )
 
 func TestAddTask(t *testing.T) {
+	tempFile, err := os.CreateTemp("", "test_*.json")
+		if err != nil {
+			t.Errorf("Error creating temp file")
+		}
+		defer os.Remove(tempFile.Name())
+	store.Filename = tempFile.Name()
 	t.Run("test with valid input", func(t *testing.T) {
 		ctx := context.WithValue(context.Background(), models.TraceID, "123")
 		//setup

@@ -8,11 +8,10 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-
 	// "github.com/sasirekha-dev/go2.0/models"
 )
 
-var Filename = filepath.Join("database","list.json")
+var Filename = filepath.Join("database", "list.json")
 
 type ToDoItem struct {
 	Task   string `json:"task"`
@@ -27,92 +26,78 @@ func (t ToDoItem) LogValue() slog.Value {
 	return slog.StringValue(fmt.Sprintf("Task-%s with status-%s", t.Task, t.Status))
 }
 
-func Save(data map[int]ToDoItem, ctx context.Context) error{
+func Save(data map[int]ToDoItem, ctx context.Context) error {
 
-	file, err := os.Create(Filename)
-	if err != nil {
-		log.Fatal("failed to create file")
+	bytes, err:= json.Marshal(data)
+	if err!=nil{
+		slog.ErrorContext(ctx, "Error with json data")
+		return nil
 	}
-	defer file.Close()
-	encoder := json.NewEncoder(file)
-	if err := encoder.Encode(&data); err != nil {
-		log.Fatalf("Failed to write to file: %v", err)
-		return errorMsg("Not able to save")
+	err = os.WriteFile(Filename, bytes, os.FileMode(os.O_RDWR))
+	if err!=nil{
+		slog.ErrorContext(ctx, "Error writing to file")
+		return nil
 	}
 	slog.InfoContext(ctx, "Saving to file", "Filename", Filename)
 	return nil
 }
 
-func Load() map[int]ToDoItem{
+func Load() map[int]ToDoItem {
 	var data map[int]ToDoItem
-	file, err := os.Open(Filename)
-	if err != nil {
-		file, err := os.Create(Filename)
-		if err != nil {
-			log.Fatal("error creating file")
-		}
-		defer file.Close()
-		return make(map[int]ToDoItem)
+	file, e := os.Open(Filename)
+	if e!=nil{
+		log.Fatalf("Failed to read from file: %v", e)
 	}
-	defer file.Close()
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&data); err != nil {
 		if err.Error() == "EOF" {
+			log.Println("EOF reached...")
 			return make(map[int]ToDoItem)
 		}
 		log.Fatalf("Failed to read from file: %v", err)
 	}
-
 	return data
 }
 
-func SaveToFile(data map[int]ToDoItem) {
-	file, err := os.Create(Filename)
-	if err != nil {
-		log.Fatal("failed to create file")
-	}
-	defer file.Close()
-	encoder := json.NewEncoder(file)
-	if err := encoder.Encode(&data); err != nil {
-		log.Fatalf("Failed to write to file: %v", err)
-		return
-	}	
-	return
-}
+// func SaveToFile(data map[int]ToDoItem) {
+// 	file, err := os.Create(Filename)
+// 	if err != nil {
+// 		log.Fatal("failed to create file")
+// 	}
+// 	defer file.Close()
+// 	encoder := json.NewEncoder(file)
+// 	if err := encoder.Encode(&data); err != nil {
+// 		log.Fatalf("Failed to write to file: %v", err)
+// 	}
+// 	return
+// }
 
-
-func Read(Filename string, ctx context.Context) (map[int]ToDoItem, error) {
+func Read(file *os.File, ctx context.Context) (map[int]ToDoItem, error) {
 	var data map[int]ToDoItem
-	file, err := os.Open(Filename)
-	if err != nil {
-		file, err := os.Create(Filename)
-		if err != nil {
-			log.Fatal("error creating file")
-		}
-		defer file.Close()
-		return make(map[int]ToDoItem), nil
-	}
-	defer file.Close()
+
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&data); err != nil {
 		if err.Error() == "EOF" {
+			log.Println("EOF reached...")
 			return make(map[int]ToDoItem), nil
 		}
 		log.Fatalf("Failed to read from file: %v", err)
+		return nil, err
 	}
 	slog.InfoContext(ctx, "List all Tasks")
-
-	return data, err
+	return data, nil
 }
 
-func AddTask(insertData string, status string, ctx context.Context) error{
+func Add(insertData string, status string,file *os.File, ctx context.Context) error{
 	fmt.Println("In Add task ...")
-	ToDoItems, _ = Read(Filename, ctx)
+	ToDoItems := Load()
+
 	// get length of the list
 	totalItems := len(ToDoItems)
 	if insertData != "" && status != "" {
 		newToDoItem := ToDoItem{insertData, status}
 		ToDoItems[totalItems+1] = newToDoItem
+		fmt.Println(ToDoItems)
 		err := Save(ToDoItems, ctx)
 		if err!=nil{
 			return err
@@ -122,47 +107,32 @@ func AddTask(insertData string, status string, ctx context.Context) error{
 	return nil
 }
 
-func Add(insertData string, status string, ToDoItems map[int]ToDoItem, ctx context.Context) error{
-	fmt.Println("In Add task ...")
-	// get length of the list
-	totalItems := len(ToDoItems)
-	if insertData != "" && status != "" {
-		newToDoItem := ToDoItem{insertData, status}
-		ToDoItems[totalItems+1] = newToDoItem
-		// err := Save(ToDoItems, ctx)
-		// if err!=nil{
-		// 	return err
-		// }
-		slog.InfoContext(ctx, "Add Task", "task", newToDoItem)
-	}
-	return nil
-}
-
 func (error_msg errorMsg) Error() string {
 	return string(error_msg)
 }
 
-func DeleteTask(taskNumber int, file_content map[int]ToDoItem, ctx context.Context) error {
+func DeleteTask(taskNumber int, file *os.File, ctx context.Context) error {
+	file_content := Load()
+	fmt.Printf("FILE_CONTENT- %v",file_content)
 	if taskNumber > 0 {
 		_, key_present := file_content[taskNumber]
 		if key_present {
 			del_task := file_content[taskNumber]
 			delete(file_content, taskNumber)
-			Save(file_content, ctx)
+			Save(file_content, ctx)		
 			slog.InfoContext(ctx, "Delete Task", "task", del_task)
 			log.Print(ctx)
 		} else {
 			slog.InfoContext(ctx, "Delete Task", "Message:", "Task is not present")
 			return errorMsg("Out of limit index")
-		}		
+		}
 	}
 	return nil
 }
 
-func UpdateTask(task string, status string, index int, ctx context.Context) error {
-	fmt.Println("Trace id....")
-	fmt.Println(ctx)
-	ToDoItems, _ = Read(Filename, ctx)
+
+func Update(task string, status string, index int, file *os.File, ctx context.Context) error {
+	ToDoItems:= Load()
 	if index > 0 {
 		update_item, exists := ToDoItems[index]
 		if exists {
@@ -179,29 +149,30 @@ func UpdateTask(task string, status string, index int, ctx context.Context) erro
 		ToDoItems[index] = update_item
 		Save(ToDoItems, ctx)
 		slog.InfoContext(ctx, "Update Task", "task", ToDoItem{task, status})
-		
+
 	}
 	return nil
 }
 
-func Update(task string, status string, index int, ToDoItems map[int]ToDoItem, ctx context.Context) error {
-	
-	if index > 0 {
-		update_item, exists := ToDoItems[index]
-		if exists {
-			if task == "" {
-				update_item.Status = status
-			} else if status == "" {
-				update_item.Task = task
-			} else {
-				update_item = ToDoItem{Task: task, Status: status}
-			}
-		} else{
-			return errorMsg("Out of range")
+func Close(file *os.File) error {
+	log.Println("CLOSING FILE...")
+	if file != nil {
+		err := file.Close()
+		if err != nil {
+			return err
 		}
-		ToDoItems[index] = update_item
-		slog.InfoContext(ctx, "Update Task", "task", ToDoItem{task, status})
-		
 	}
 	return nil
+}
+
+func Open() *os.File {
+	file, err := os.Open(Filename)
+	if err != nil {
+		log.Fatal("error creating file")
+		// defer file.Close()
+		return nil
+	}
+	// defer file.Close()
+	log.Println("File is opened")
+	return file
 }

@@ -23,14 +23,14 @@ var requests chan apiRequest
 var done chan struct{}
 
 type apiRequest struct {
-	verb   string
-	task   string
-	status string
-	taskID int
-	resp   chan any
-	ctx context.Context
+	verb      string
+	task      string
+	status    string
+	taskID    int
+	resp      chan any
+	respError chan error
+	ctx       context.Context
 }
-
 
 func addTask(w http.ResponseWriter, r *http.Request) {
 
@@ -43,14 +43,24 @@ func addTask(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&AddRequest)
 	if err != nil {
+		http.Error(w, "Error in POST request", http.StatusInternalServerError)
+	}
+	error_resp := make(chan error)
+	requests <- apiRequest{verb: http.MethodPost, task: AddRequest.Task,
+		status: AddRequest.Status, ctx: r.Context(), respError: error_resp}
+
+	if <-error_resp != nil {
+		http.Error(w, "Error in POST request", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	// err = store.AddTask(AddRequest.Task, AddRequest.Status, r.Context())
-	// if err != nil {
-	// 	http.Error(w, "not able to save", http.StatusInternalServerError)
-	// }
-	requests <- apiRequest{verb: http.MethodPost, task: AddRequest.Task,
-		status: AddRequest.Status, ctx: r.Context()}
+	// Respond to client
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	response := map[string]string{
+		"message": "Task added successfully",
+	}
+	json.NewEncoder(w).Encode(response)
 }
 
 func deleteTask(w http.ResponseWriter, r *http.Request) {
@@ -59,20 +69,14 @@ func deleteTask(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Could identify as DELETE request")
 		return
 	}
-	// ToDoItems, err := store.Read(store.Filename, r.Context())
-	// if err != nil {
 
-	// }
 	queryString, found := strings.CutPrefix(r.URL.RawQuery, "id=")
 	if !found {
 		http.Error(w, "Error in Request", http.StatusBadRequest)
 	}
 	item_delete, _ := strconv.Atoi(queryString)
 	log.Printf("item to delete = %d", item_delete)
-	// err = store.DeleteTask(item_delete, ToDoItems, r.Context())
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// }
+
 	requests <- apiRequest{verb: http.MethodDelete, taskID: item_delete}
 }
 
@@ -91,10 +95,7 @@ func updateTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	// err = store.UpdateTask(updateRequest.Task, updateRequest.Status, updateRequest.Index, r.Context())
-	// if err != nil {
-	// 	http.Error(w, "not able to save", http.StatusInternalServerError)
-	// }
+
 	requests <- apiRequest{verb: http.MethodPut, task: updateRequest.Task,
 		status: updateRequest.Status, taskID: updateRequest.Index, ctx: r.Context()}
 
@@ -108,14 +109,14 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 
 	responseChan := make(chan any)
 	requests <- apiRequest{verb: http.MethodGet, resp: responseChan}
-	result := <- responseChan
+	result := <-responseChan
 	tasks, ok := result.(map[int]store.ToDoItem)
-	if !ok{
+	if !ok {
 		log.Println("Error in list received")
 		http.Error(w, "Internal Server error", http.StatusInternalServerError)
 		return
 	}
-	
+
 	tmp, e := template.ParseFiles("api/template/template.html")
 	if e != nil {
 		log.Printf("Error parse file- %v", e)
@@ -126,7 +127,6 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 	err := tmp.Execute(w, tasks)
 	if err != nil {
 		log.Printf("Error Execute file- %v", err)
-		// slog.Error("Failed to parse template file")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -155,36 +155,34 @@ func (th *TraceIDHandle) Handle(ctx context.Context, r slog.Record) error {
 func startActor() {
 	log.Println("starting Actor")
 	requests = make(chan apiRequest)
-	go processRequests(requests)
+	processRequests(requests)
 }
 
 func processRequests(requests <-chan apiRequest) {
 	done = make(chan struct{})
 	// Open database connection
-	file := store.Open()	
+	file := store.Open()
 	go func() {
-		defer close(done)	
-		defer store.Close(file) //Closes the database connection	
+		defer close(done)
+		defer store.Close(file) //Closes the database connection
 		defer log.Print("Exiting the process go routine...")
 		for req := range requests {
 			switch req.verb {
-			case http.MethodDelete:				
+			case http.MethodDelete:
 				log.Println("delete request received")
 				index := req.taskID
-				store.DeleteTask(index, file, req.ctx)
-				// store.SaveToFile(store.Load(file))
+				store.DeleteTask(index, req.ctx)
 			case http.MethodGet:
 				log.Println("get request received")
-				tasks, _:= store.Read(file, req.ctx)
+				tasks, _ := store.Read(req.ctx)
 				req.resp <- tasks
 			case http.MethodPost:
 				log.Println("Post request received")
-				store.Add(req.task, req.status,file, req.ctx)
-				// store.SaveToFile(ToDoItems)
+				err := store.Add(req.task, req.status, req.ctx)
+				req.respError <- err
 			case http.MethodPut:
 				log.Println("put request received")
-				store.Update(req.task, req.status, req.taskID, file, req.ctx)
-				// store.SaveToFile(ToDoItems)
+				store.Update(req.task, req.status, req.taskID, req.ctx)
 			default:
 				log.Printf("Unidentifiable http method")
 			}

@@ -8,7 +8,8 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	// "github.com/sasirekha-dev/go2.0/models"
+
+
 )
 
 var Filename = filepath.Join("database", "list.json")
@@ -72,9 +73,13 @@ func Load() map[int]ToDoItem {
 // 	return
 // }
 
-func Read(file *os.File, ctx context.Context) (map[int]ToDoItem, error) {
+func Read(ctx context.Context) (map[int]ToDoItem, error) {
 	var data map[int]ToDoItem
-
+	file, e := os.Open(Filename)
+	if e!=nil{
+		log.Fatalf("Failed to read from file: %v", e)
+		return nil, e
+	}
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&data); err != nil {
 		if err.Error() == "EOF" {
@@ -88,7 +93,7 @@ func Read(file *os.File, ctx context.Context) (map[int]ToDoItem, error) {
 	return data, nil
 }
 
-func Add(insertData string, status string,file *os.File, ctx context.Context) error{
+func Add(insertData string, status string, ctx context.Context) error{
 	fmt.Println("In Add task ...")
 	ToDoItems := Load()
 
@@ -111,7 +116,7 @@ func (error_msg errorMsg) Error() string {
 	return string(error_msg)
 }
 
-func DeleteTask(taskNumber int, file *os.File, ctx context.Context) error {
+func DeleteTask(taskNumber int, ctx context.Context) error {
 	file_content := Load()
 	fmt.Printf("FILE_CONTENT- %v",file_content)
 	if taskNumber > 0 {
@@ -131,7 +136,7 @@ func DeleteTask(taskNumber int, file *os.File, ctx context.Context) error {
 }
 
 
-func Update(task string, status string, index int, file *os.File, ctx context.Context) error {
+func Update(task string, status string, index int, ctx context.Context) error {
 	ToDoItems:= Load()
 	if index > 0 {
 		update_item, exists := ToDoItems[index]

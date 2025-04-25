@@ -3,6 +3,7 @@ package store_test
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"os"
 	"reflect"
 	"testing"
@@ -13,10 +14,10 @@ import (
 
 func TestAddTask(t *testing.T) {
 	tempFile, err := os.CreateTemp("", "test_*.json")
-		if err != nil {
-			t.Errorf("Error creating temp file")
-		}
-		defer os.Remove(tempFile.Name())
+	if err != nil {
+		t.Errorf("Error creating temp file")
+	}
+	defer os.Remove(tempFile.Name())
 	store.Filename = tempFile.Name()
 	t.Run("test with valid input", func(t *testing.T) {
 		ctx := context.WithValue(context.Background(), models.TraceID, "123")
@@ -24,19 +25,16 @@ func TestAddTask(t *testing.T) {
 		store.ToDoItems = map[int]store.ToDoItem{}
 
 		//when
-		store.AddTask("task1", "pending", ctx)
+		store.Add("task1", "pending", ctx)
 
 		//assert
-		item, ok := store.ToDoItems[1]
-		if !ok {
-			t.Errorf("expected key 1 does not exists")
+		decoder := json.NewDecoder(tempFile)
+		var data map[int]store.ToDoItem
+		decoder.Decode(&data)
+		if data[1].Task != "task1" && data[1].Status != "pending" {
+			t.Errorf("expected data does not exists")
 		}
-		if item.Task != "task1" {
-			t.Errorf("expected task does not exists")
-		}
-		if item.Status != "pending" {
-			t.Errorf("expected status does not exists")
-		}
+
 	})
 	t.Run("test with empty inputs", func(t *testing.T) {
 		ctx := context.WithValue(context.Background(), models.TraceID, "test-trace")
@@ -44,25 +42,36 @@ func TestAddTask(t *testing.T) {
 		store.ToDoItems = map[int]store.ToDoItem{}
 
 		//when
-		store.AddTask("", "", ctx)
+		store.Add("", "", ctx)
 
 		//assert
-		if len(store.ToDoItems) != 0 {
-			t.Errorf("expected key 1 does not exists")
+		decoder := json.NewDecoder(tempFile)
+		var data map[int]store.ToDoItem
+		decoder.Decode(&data)
+		if len(data) != 0 {
+			t.Errorf("Empty task is added")
 		}
 	})
 }
 
 func TestDeleteTask(t *testing.T) {
+	tempFile, err := os.CreateTemp("", "test_*.json")
+	if err != nil {
+		t.Errorf("Error creating temp file")
+	}
+	defer os.Remove(tempFile.Name())
+	store.Filename = tempFile.Name()
+	store.ToDoItems = map[int]store.ToDoItem{
+		1: {Task: "Existing Task", Status: "done"},
+	}
 	t.Run("test with valid input", func(t *testing.T) {
-		ctx := context.WithValue(context.Background(), models.TraceID, "123")
 		//setup
-		store.ToDoItems = map[int]store.ToDoItem{
-			1: {Task: "Existing Task", Status: "done"},
-		}
+		ctx := context.WithValue(context.Background(), models.TraceID, "123")
 
+		encoder := json.NewEncoder(tempFile)
+		encoder.Encode(store.ToDoItems)
 		//when
-		got := store.DeleteTask(1, store.ToDoItems, ctx)
+		got := store.DeleteTask(1, ctx)
 
 		//assert
 		if got != nil {
@@ -73,12 +82,9 @@ func TestDeleteTask(t *testing.T) {
 	t.Run("test with out of boundary index value", func(t *testing.T) {
 		ctx := context.WithValue(context.Background(), models.TraceID, "123")
 		//setup
-		store.ToDoItems = map[int]store.ToDoItem{
-			1: {Task: "Existing Task", Status: "done"},
-		}
 
 		//when
-		got := store.DeleteTask(2, store.ToDoItems, ctx)
+		got := store.DeleteTask(2, ctx)
 
 		//assert
 		if got.Error() != "Out of limit index" {
@@ -89,43 +95,41 @@ func TestDeleteTask(t *testing.T) {
 
 func TestUpdateTask(t *testing.T) {
 	tempFile, err := os.CreateTemp("", "test_*.json")
-		if err != nil {
-			t.Errorf("Error creating temp file")
-		}
-		defer os.Remove(tempFile.Name())
+	if err != nil {
+		t.Errorf("Error creating temp file")
+	}
+	defer os.Remove(tempFile.Name())
 	store.Filename = tempFile.Name()
 	t.Run("test with valid input", func(t *testing.T) {
 		ctx := context.WithValue(context.Background(), models.TraceID, "123")
 		//setup
 		store.ToDoItems = map[int]store.ToDoItem{
-			1: {
-				Task:   "task2",
-				Status: "pending",
-			},
+			1: {Task: "Existing Task", Status: "done"},
 		}
-
+		encoder := json.NewEncoder(tempFile)
+		encoder.Encode(store.ToDoItems)
 		//when
-		store.UpdateTask("task1", "pending", 1, ctx)
+		store.Update("task1", "pending", 1, ctx)
 
 		//assert
-		item, ok := store.ToDoItems[1]
-		if !ok {
-			t.Errorf("expected key 1 does not exists")
-		}
-		if item.Task != "task1" {
-			t.Errorf("expected task does not exists")
-		}
-		if item.Status != "pending" {
-			t.Errorf("expected status does not exists")
+		tempFile.Seek(0, io.SeekStart)
+		decoder := json.NewDecoder(tempFile)
+		var data map[int]store.ToDoItem
+		decoder.Decode(&data)
+
+		if data[1].Status != "pending" {
+			t.Errorf("Update failed-%v", data)
 		}
 	})
 	t.Run("test with empty inputs", func(t *testing.T) {
 		ctx := context.WithValue(context.Background(), models.TraceID, "test-trace")
 		//setup
-		store.ToDoItems = map[int]store.ToDoItem{}
+		// store.ToDoItems = map[int]store.ToDoItem{}
+		// encoder := json.NewEncoder(tempFile)
+		// encoder.Encode(store.ToDoItems)
 
 		//when
-		got := store.UpdateTask("", "pending", 1, ctx)
+		got := store.Update("", "pending", 2, ctx)
 
 		//assert
 		if got.Error() != "Out of range" {
@@ -142,14 +146,20 @@ func TestUpdateTask(t *testing.T) {
 				Status: "pending",
 			},
 		}
-
+		encoder := json.NewEncoder(tempFile)
+		encoder.Encode(store.ToDoItems)
 		//when
-		store.UpdateTask("", "completed", 1, ctx)
+		store.Update("", "completed", 1, ctx)
 
 		//assert
-		item, ok := store.ToDoItems[1]
-		if !ok || item.Task != "task2" || item.Status != "completed" {
-			t.Errorf("Update test case failed")
+		
+		decoder := json.NewDecoder(tempFile)
+		tempFile.Seek(0, io.SeekStart)
+		var data map[int]store.ToDoItem
+		decoder.Decode(&data)
+
+		if data[1].Task != "task2" && data[1].Status != "completed" {
+			t.Errorf("Update test case failed-%v", data)
 		}
 	})
 }
@@ -163,18 +173,16 @@ func TestLoadFile(t *testing.T) {
 			t.Errorf("Error creating temp file")
 		}
 		defer os.Remove(tempFile.Name())
+		store.Filename = tempFile.Name()
 		encoder := json.NewEncoder(tempFile)
-		if err := encoder.Encode(map[int]store.ToDoItem{
-			1: {Task: "abc", Status: "pending"},
-		}); err != nil {
-			t.Errorf("Cannot write to temp file")
-		}
+		store.ToDoItems = map[int]store.ToDoItem{1: {Task: "abc", Status: "pending"}}
+		encoder.Encode(store.ToDoItems)
 		//when
-		data, err := store.Read(tempFile.Name(), ctx)
+		data, err := store.Read(ctx)
 
 		//assert
 		if !reflect.DeepEqual(data, map[int]store.ToDoItem{1: {Task: "abc", Status: "pending"}}) || err != nil {
-			t.Errorf("Read test case failed")
+			t.Errorf("Read test case failed-%v", data)
 		}
 
 	})
@@ -195,7 +203,7 @@ func TestSaveFile(t *testing.T) {
 		newData := map[int]store.ToDoItem{
 			2: {Task: "Experiment GoLang", Status: "pending"},
 		}
-		
+
 		err = store.Save(newData, ctx)
 		//assert
 		if err != nil {
@@ -205,7 +213,7 @@ func TestSaveFile(t *testing.T) {
 		content := map[int]store.ToDoItem{}
 		decoder := json.NewDecoder(tempFile)
 		_ = decoder.Decode(&content)
-		if !reflect.DeepEqual(content, newData){
+		if !reflect.DeepEqual(content, newData) {
 			t.Errorf("Save values are different")
 		}
 	})

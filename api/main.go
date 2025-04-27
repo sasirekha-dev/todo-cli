@@ -20,6 +20,7 @@ import (
 
 var Requests chan apiRequest
 var Done chan struct{}
+var ctx context.Context
 
 type apiRequest struct {
 	verb      string
@@ -37,12 +38,14 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Could identify as POST request")
 		return
 	}
-	fmt.Println("Add request handler")
+
 	var AddRequest store.ToDoItem
 
 	err := json.NewDecoder(r.Body).Decode(&AddRequest)
 	if err != nil {
-		http.Error(w, "Error in POST request", http.StatusInternalServerError)
+		e := fmt.Sprintf("Error - %v", err)
+		http.Error(w, e, http.StatusInternalServerError)
+		return
 	}
 	error_resp := make(chan error)
 	Requests <- apiRequest{verb: http.MethodPost, task: AddRequest.Task,
@@ -63,6 +66,8 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteTask(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	error_resp := make(chan error)
 	if r.Method != http.MethodDelete {
 		fmt.Println("Could identify as DELETE request")
@@ -77,13 +82,15 @@ func DeleteTask(w http.ResponseWriter, r *http.Request) {
 	log.Printf("item to delete = %d", item_delete)
 
 	Requests <- apiRequest{verb: http.MethodDelete, taskID: item_delete, respError: error_resp}
-	if <-error_resp != nil {
-		http.Error(w, "Error in POST request", http.StatusBadRequest)
+	if e:= <-error_resp; e != nil {
+		slog.ErrorContext(r.Context(), e.Error())
+		http.Error(w, "Error in DELETE request", http.StatusBadRequest)
 		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"message": e.Error()})
 		return
 	}
 	// Respond to client
-	w.Header().Set("Content-Type", "application/json")
+	
 	w.WriteHeader(http.StatusOK)
 	response := map[string]string{
 		"message": "Task deleted successfully",
@@ -144,10 +151,8 @@ func ListHandler(w http.ResponseWriter, r *http.Request) {
 		log.Print(e)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	log.Print(result)
 	//Render in html page
 
 	tasks, ok := result.(map[int]store.ToDoItem)
@@ -156,6 +161,7 @@ func ListHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server error", http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	tmp, e := template.ParseFiles("api/template/template.html")
 	if e != nil {
@@ -199,7 +205,7 @@ func StartActor(ctx context.Context) {
 	processRequests(ctx, Requests)
 }
 
-func processRequests(ctx context.Context,Requests <-chan apiRequest) {
+func processRequests(ctx context.Context, Requests <-chan apiRequest) {
 	Done = make(chan struct{})
 	// Open database connection
 	file := store.Open()
@@ -236,18 +242,20 @@ func processRequests(ctx context.Context,Requests <-chan apiRequest) {
 }()
 }
 
+
 func main() {
 	handlerOpts := &slog.HandlerOptions{
-		// AddSource: true,
+		AddSource: true,
 		Level: slog.LevelDebug,
 	}
 	jsonHandler := slog.NewJSONHandler(os.Stderr, handlerOpts)
 	NewHandler := &TraceIDHandle{jsonHandler}
 	logger := slog.New(NewHandler)
 	slog.SetDefault(logger)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	fmt.Println("Server starting...")
+
+	// ctx, cancel := context.WithCancel(ctx)
+	// defer cancel()
+	fmt.Println("Starting server and listening at :8080...")
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /add", AddTask)
@@ -265,6 +273,7 @@ func main() {
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
+
 	StartActor(ctx)
 	go func() {
 		err := server.ListenAndServe()

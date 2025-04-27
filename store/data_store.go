@@ -83,12 +83,15 @@ func Read(ctx context.Context) (map[int]ToDoItem, error) {
 func Add(insertData string, status string, ctx context.Context) error{
 	fmt.Println("In Add task ...")
 	ToDoItems := Load()
-
-	// get length of the list
-	totalItems := len(ToDoItems)
+	maxKey:=0
+	for id:= range ToDoItems{
+		if id>maxKey{
+			maxKey = id
+		}
+	}
 	if insertData != "" && status != "" {
 		newToDoItem := ToDoItem{insertData, status}
-		ToDoItems[totalItems+1] = newToDoItem
+		ToDoItems[maxKey+1] = newToDoItem
 		fmt.Println(ToDoItems)
 		err := Save(ToDoItems, ctx)
 		if err!=nil{
@@ -112,7 +115,7 @@ func DeleteTask(taskNumber int, ctx context.Context) error {
 			del_task := file_content[taskNumber]
 			delete(file_content, taskNumber)
 			Save(file_content, ctx)		
-			slog.InfoContext(ctx, "Delete Task", "task", del_task)
+			slog.InfoContext(ctx, "Delete Task", "task", del_task.Task, "status", del_task.Status)
 			log.Print(ctx)
 		} else {
 			slog.InfoContext(ctx, "Delete Task", "Message:", "Task is not present")

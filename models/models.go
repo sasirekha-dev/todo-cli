@@ -1,6 +1,8 @@
 package models
 
 
-type TraceIDKey string
+// type TraceIDKey string
 
-var TraceID TraceIDKey
+// var TraceID TraceIDKey
+
+const TraceID string = "trace-id"

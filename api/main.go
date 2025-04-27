@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"os/signal"
-
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
 
@@ -19,8 +18,8 @@ import (
 	"github.com/sasirekha-dev/go2.0/store"
 )
 
-var requests chan apiRequest
-var done chan struct{}
+var Requests chan apiRequest
+var Done chan struct{}
 
 type apiRequest struct {
 	verb      string
@@ -32,7 +31,7 @@ type apiRequest struct {
 	ctx       context.Context
 }
 
-func addTask(w http.ResponseWriter, r *http.Request) {
+func AddTask(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
 		fmt.Println("Could identify as POST request")
@@ -46,7 +45,7 @@ func addTask(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error in POST request", http.StatusInternalServerError)
 	}
 	error_resp := make(chan error)
-	requests <- apiRequest{verb: http.MethodPost, task: AddRequest.Task,
+	Requests <- apiRequest{verb: http.MethodPost, task: AddRequest.Task,
 		status: AddRequest.Status, ctx: r.Context(), respError: error_resp}
 
 	if <-error_resp != nil {
@@ -56,15 +55,15 @@ func addTask(w http.ResponseWriter, r *http.Request) {
 	}
 	// Respond to client
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 	response := map[string]string{
 		"message": "Task added successfully",
 	}
 	json.NewEncoder(w).Encode(response)
 }
 
-func deleteTask(w http.ResponseWriter, r *http.Request) {
-
+func DeleteTask(w http.ResponseWriter, r *http.Request) {
+	error_resp := make(chan error)
 	if r.Method != http.MethodDelete {
 		fmt.Println("Could identify as DELETE request")
 		return
@@ -77,10 +76,23 @@ func deleteTask(w http.ResponseWriter, r *http.Request) {
 	item_delete, _ := strconv.Atoi(queryString)
 	log.Printf("item to delete = %d", item_delete)
 
-	requests <- apiRequest{verb: http.MethodDelete, taskID: item_delete}
+	Requests <- apiRequest{verb: http.MethodDelete, taskID: item_delete, respError: error_resp}
+	if <-error_resp != nil {
+		http.Error(w, "Error in POST request", http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	// Respond to client
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	response := map[string]string{
+		"message": "Task deleted successfully",
+	}
+	json.NewEncoder(w).Encode(response)
 }
 
-func updateTask(w http.ResponseWriter, r *http.Request) {
+func UpdateTask(w http.ResponseWriter, r *http.Request) {
+	error_resp := make(chan error)
 	if r.Method != http.MethodPut {
 		fmt.Println("Could identify as PUT request")
 		return
@@ -96,20 +108,48 @@ func updateTask(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	requests <- apiRequest{verb: http.MethodPut, task: updateRequest.Task,
-		status: updateRequest.Status, taskID: updateRequest.Index, ctx: r.Context()}
+	Requests <- apiRequest{verb: http.MethodPut, task: updateRequest.Task,
+		status: updateRequest.Status, taskID: updateRequest.Index,
+		ctx: r.Context(), respError: error_resp}
 
+	if e := <-error_resp; e != nil {
+		http.Error(w, "Error in POST request", http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Print(e)
+		return
+	}
+	// Respond to client
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	response := map[string]string{
+		"message": "Task updated successfully",
+	}
+	json.NewEncoder(w).Encode(response)
 }
 
-func listHandler(w http.ResponseWriter, r *http.Request) {
+func ListHandler(w http.ResponseWriter, r *http.Request) {
+	errChan := make(chan error)
+	responseChan := make(chan any)
+
 	if r.Method != http.MethodGet {
 		fmt.Println("Could identify as GET request")
 		return
 	}
 
-	responseChan := make(chan any)
-	requests <- apiRequest{verb: http.MethodGet, resp: responseChan}
+	Requests <- apiRequest{verb: http.MethodGet, resp: responseChan, respError: errChan}
 	result := <-responseChan
+	if e := <-errChan; e != nil {
+		http.Error(w, "Error in POST request", http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Print(e)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	log.Print(result)
+	//Render in html page
+
 	tasks, ok := result.(map[int]store.ToDoItem)
 	if !ok {
 		log.Println("Error in list received")
@@ -123,7 +163,6 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, e.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	err := tmp.Execute(w, tasks)
 	if err != nil {
 		log.Printf("Error Execute file- %v", err)
@@ -152,42 +191,49 @@ func (th *TraceIDHandle) Handle(ctx context.Context, r slog.Record) error {
 	return th.Handler.Handle(ctx, r)
 }
 
-func startActor() {
+func StartActor(ctx context.Context) {
 	log.Println("starting Actor")
-	requests = make(chan apiRequest)
-	processRequests(requests)
+	Requests = make(chan apiRequest)
+	Done = make(chan struct{})
+
+	processRequests(ctx, Requests)
 }
 
-func processRequests(requests <-chan apiRequest) {
-	done = make(chan struct{})
+func processRequests(ctx context.Context,Requests <-chan apiRequest) {
+	Done = make(chan struct{})
 	// Open database connection
 	file := store.Open()
 	go func() {
-		defer close(done)
+		defer close(Done)
 		defer store.Close(file) //Closes the database connection
 		defer log.Print("Exiting the process go routine...")
-		for req := range requests {
+
+		for req := range Requests{
 			switch req.verb {
 			case http.MethodDelete:
 				log.Println("delete request received")
 				index := req.taskID
-				store.DeleteTask(index, req.ctx)
+				err:=store.DeleteTask(index, req.ctx)
+				req.respError <- err
 			case http.MethodGet:
 				log.Println("get request received")
-				tasks, _ := store.Read(req.ctx)
+				tasks, err := store.Read(req.ctx)
 				req.resp <- tasks
+				req.respError<-err
 			case http.MethodPost:
 				log.Println("Post request received")
 				err := store.Add(req.task, req.status, req.ctx)
 				req.respError <- err
 			case http.MethodPut:
 				log.Println("put request received")
-				store.Update(req.task, req.status, req.taskID, req.ctx)
+				err:=store.Update(req.task, req.status, req.taskID, req.ctx)
+				req.respError<-err
 			default:
 				log.Printf("Unidentifiable http method")
 			}
 		}
-	}()
+
+}()
 }
 
 func main() {
@@ -199,14 +245,15 @@ func main() {
 	NewHandler := &TraceIDHandle{jsonHandler}
 	logger := slog.New(NewHandler)
 	slog.SetDefault(logger)
-
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	fmt.Println("Server starting...")
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("POST /add", addTask)
-	mux.HandleFunc("DELETE /delete", deleteTask)
-	mux.HandleFunc("PUT /update", updateTask)
-	mux.HandleFunc("GET /list", listHandler)
+	mux.HandleFunc("POST /add", AddTask)
+	mux.HandleFunc("DELETE /delete", DeleteTask)
+	mux.HandleFunc("PUT /update", UpdateTask)
+	mux.HandleFunc("GET /list", ListHandler)
 
 	wd, _ := os.Getwd()
 	fmt.Println("Working directory:", wd)
@@ -218,7 +265,7 @@ func main() {
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
-	startActor()
+	StartActor(ctx)
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil {
@@ -227,7 +274,7 @@ func main() {
 	}()
 
 	<-quit
-	close(requests)
-	<-done
+	close(Requests)
+	<-Done
 	log.Printf("Received shutdown on ctrl+c")
 }

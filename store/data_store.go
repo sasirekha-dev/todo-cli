@@ -154,7 +154,6 @@ func Update(task string, status string, index int, ctx context.Context) error {
 		ToDoItems[index] = update_item
 		Save(ToDoItems, ctx)
 		slog.InfoContext(ctx, "Update Task", "task", ToDoItem{task, status})
-
 	}
 	return nil
 }

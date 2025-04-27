@@ -60,19 +60,6 @@ func Load() map[int]ToDoItem {
 	return data
 }
 
-// func SaveToFile(data map[int]ToDoItem) {
-// 	file, err := os.Create(Filename)
-// 	if err != nil {
-// 		log.Fatal("failed to create file")
-// 	}
-// 	defer file.Close()
-// 	encoder := json.NewEncoder(file)
-// 	if err := encoder.Encode(&data); err != nil {
-// 		log.Fatalf("Failed to write to file: %v", err)
-// 	}
-// 	return
-// }
-
 func Read(ctx context.Context) (map[int]ToDoItem, error) {
 	var data map[int]ToDoItem
 	file, e := os.Open(Filename)

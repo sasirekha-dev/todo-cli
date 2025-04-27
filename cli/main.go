@@ -50,7 +50,7 @@ func main() {
 	logger := slog.New(NewHandler)
 	slog.SetDefault(logger)
 
-	store.ToDoItems, _ = store.Read(store.Filename, ctx)
+	store.ToDoItems, _ = store.Read(ctx)
 	
 	add := flag.String("add", "", "Todo item to add")
 	delete := flag.Int("delete", 0, "Delete a task")
@@ -62,16 +62,16 @@ func main() {
 
 	switch {
 	case *add != "":
-		store.AddTask(*add, *status, ctx)
+		store.Add(*add, *status, ctx)
 
 	case *delete > 0:
-		err := store.DeleteTask(*delete, store.ToDoItems, ctx)
+		err := store.DeleteTask(*delete, ctx)
 		if err != nil {
 			fmt.Println("Custom error", err)
 		}
 
 	case *update > 0:
-		err := store.UpdateTask(*task, *status, *update, ctx)
+		err := store.Update(*task, *status, *update, ctx)
 		if err != nil {
 			fmt.Println(err)
 		}

@@ -47,6 +47,7 @@ func TestAddHandler(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T){
+
 	updatePayload := map[string]any{
 		"index":  1,
 		"task":   "Updated Task",
@@ -87,18 +88,9 @@ func TestListHandler(t *testing.T){
 
 
 func TestDeleteHandler(t *testing.T) {
-	// tempFile, _ := os.Open(store.Filename)
-	// data := map[int]store.ToDoItem{}
-	// data[1] = store.ToDoItem{Task: "", Status: "not started"}
-
-	// encoder := json.NewEncoder(tempFile)
-	// encoder.Encode(data)
-	// Setup(t)
 
 	req := httptest.NewRequest(http.MethodDelete, "/delete?id=1", nil)
 	req = req.WithContext(context.Background())
-	// Start the actor first
-	
 
 	reqRecorder := httptest.NewRecorder()
 	

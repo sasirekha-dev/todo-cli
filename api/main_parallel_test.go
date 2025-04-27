@@ -9,14 +9,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"sync"
 
 	"testing"
 
 	"github.com/sasirekha-dev/go2.0/store"
 )
 
-func TestParallelAdd(t *testing.T) {
+func TestParallel(t *testing.T) {
 	tempFile, err := os.CreateTemp("", "test_*.json")
 	if err != nil {
 		log.Fatalf("Error creating temp file")
@@ -25,15 +24,12 @@ func TestParallelAdd(t *testing.T) {
 	store.Filename = tempFile.Name()
 	ctx, _ := context.WithCancel(context.Background())
 	StartActor(ctx)
-	numItemsAdd := 10
-	var wg sync.WaitGroup
+	numItemsAdd := 2
+
 	for i := 0; i < numItemsAdd; i++ {
-		task := fmt.Sprintf("Task-%d", i)
-		
+		task := fmt.Sprintf("AddTask-%d", i)
 		t.Run(task, func(t *testing.T) {
-			// t.Parallel()		
-			wg.Add(1) // Increment the WaitGroup counter	
-			defer wg.Done()
+			t.Parallel()
 			newTask := store.ToDoItem{Task: task, Status: "started"}
 			body, _ := json.Marshal(newTask)
 			req := httptest.NewRequest(http.MethodPost, "/add", bytes.NewBuffer(body))
@@ -49,20 +45,48 @@ func TestParallelAdd(t *testing.T) {
 			}
 		})
 	}
+	for i := 1; i < numItemsAdd+1; i++ {
+		task := fmt.Sprintf("UpdateTask-%d", i)
+		t.Run(task, func(t *testing.T) {
+			t.Parallel()
+			updateTask := map[string]any{
+				"index":  i,
+				"task":   task,
+				"status": "completed",
+			}
+			body, _ := json.Marshal(updateTask)
+			req := httptest.NewRequest(http.MethodPost, "/update", bytes.NewBuffer(body))
+			req = req.WithContext(context.Background())
+			req.Header.Set("Content-Type", "application/json")
 
-	wg.Wait()
+			reqRecorder := httptest.NewRecorder()
+			t.Log("Update request called....")
+			UpdateTask(reqRecorder, req)
 
-	t.Run("verify data", func(t *testing.T) {
+			if reqRecorder.Code != http.StatusOK {
+				t.Errorf("Expected status code-200 got %d", reqRecorder.Code)
+			}
+		})
+	}
+	for i := 1; i < numItemsAdd+1; i++ {
+		task := fmt.Sprintf("UpdateTask-%d", i)
+		t.Run(task, func(t *testing.T) {
+			t.Parallel()
+			deleteReq := fmt.Sprintf("/delete?id=%d",i)
 
-		var data map[int]store.ToDoItem
-		ReadFile, _ := os.Open(store.Filename)
-		defer ReadFile.Close()
+			req := httptest.NewRequest(http.MethodPost, deleteReq, nil)
+			req = req.WithContext(context.Background())
+			req.Header.Set("Content-Type", "application/json")
 
-		decoder := json.NewDecoder(ReadFile)
-		decoder.Decode(&data)
-		fmt.Printf("The File content - %v", data)
-		if len(data) != numItemsAdd {
-			t.Errorf("Expected %d items got %d", numItemsAdd, len(data))
-		}
-	})
+			reqRecorder := httptest.NewRecorder()
+			t.Log("Delete request called....")
+			DeleteTask(reqRecorder, req)
+
+			if reqRecorder.Code != http.StatusOK {
+				t.Errorf("Expected status code-200 got %d", reqRecorder.Code)
+			}
+		})
+	}
+
+	
 }

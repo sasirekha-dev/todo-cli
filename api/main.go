@@ -35,6 +35,10 @@ type apiRequest struct {
 func AddTask(w http.ResponseWriter, r *http.Request) {
 
 	var AddRequest store.ToDoItem
+	if r.Method != http.MethodPost {
+		slog.ErrorContext(r.Context(),"Could identify as POST request")
+		return
+	}
 
 	err := json.NewDecoder(r.Body).Decode(&AddRequest)
 	if err != nil {
@@ -64,6 +68,10 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteTask(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		slog.ErrorContext(r.Context(),"Could identify as DELETE request")
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 
 	error_resp := make(chan error)
@@ -96,7 +104,7 @@ func DeleteTask(w http.ResponseWriter, r *http.Request) {
 func UpdateTask(w http.ResponseWriter, r *http.Request) {
 	error_resp := make(chan error)
 	if r.Method != http.MethodPut {
-		fmt.Println("Could identify as PUT request")
+		slog.ErrorContext(r.Context(),"Could identify as PUT request")
 		return
 	}
 	type request struct {
@@ -138,7 +146,7 @@ func ListHandler(w http.ResponseWriter, r *http.Request) {
 	responseChan := make(chan any)
 
 	if r.Method != http.MethodGet {
-		fmt.Println("Could identify as GET request")
+		slog.ErrorContext(r.Context(),"Could identify as GET request")
 		return
 	}
 
@@ -252,9 +260,8 @@ func main() {
 	logger := slog.New(NewHandler)
 	slog.SetDefault(logger)
 
-	// ctx, cancel := context.WithCancel(ctx)
-	// defer cancel()
-	fmt.Println("Starting server and listening at :8080...")
+
+	log.Println("Starting server and listening at :8080...")
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /add", AddTask)
@@ -263,7 +270,7 @@ func main() {
 	mux.HandleFunc("GET /list", ListHandler)
 
 	wd, _ := os.Getwd()
-	fmt.Println("Working directory:", wd)
+	log.Println("Working directory:", wd)
 
 	fs := http.FileServer(http.Dir("api/about"))
 	mux.Handle("/about/", http.StripPrefix("/about/", fs))

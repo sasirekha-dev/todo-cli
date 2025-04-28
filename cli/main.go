@@ -62,21 +62,22 @@ func main() {
 
 	switch {
 	case *add != "":
-		store.Add(*add, *status, ctx)
-
+		err:= store.Add(*add, *status, ctx)
+		if err != nil {
+			slog.ErrorContext(ctx, err.Error())
+		}
 	case *delete > 0:
 		err := store.DeleteTask(*delete, ctx)
 		if err != nil {
-			fmt.Println("Custom error", err)
+			slog.ErrorContext(ctx, err.Error())
 		}
 
 	case *update > 0:
 		err := store.Update(*task, *status, *update, ctx)
 		if err != nil {
-			fmt.Println(err)
+			slog.ErrorContext(ctx, err.Error())
 		}
 	default:
-		fmt.Println("Listing the items...")
 		for i := range store.ToDoItems {
 			fmt.Printf("%d. Task: %s, Status: %s \n", i, store.ToDoItems[i].Task, store.ToDoItems[i].Status)
 		}

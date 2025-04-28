@@ -81,7 +81,7 @@ func Read(ctx context.Context) (map[int]ToDoItem, error) {
 }
 
 func Add(insertData string, status string, ctx context.Context) error{
-	fmt.Println("In Add task ...")
+
 	ToDoItems := Load()
 	maxKey:=0
 	for id:= range ToDoItems{
@@ -92,7 +92,7 @@ func Add(insertData string, status string, ctx context.Context) error{
 	if insertData != "" && status != "" {
 		newToDoItem := ToDoItem{insertData, status}
 		ToDoItems[maxKey+1] = newToDoItem
-		fmt.Println(ToDoItems)
+
 		err := Save(ToDoItems, ctx)
 		if err!=nil{
 			return err
@@ -108,7 +108,7 @@ func (error_msg errorMsg) Error() string {
 
 func DeleteTask(taskNumber int, ctx context.Context) error {
 	file_content := Load()
-	fmt.Printf("FILE_CONTENT- %v",file_content)
+
 	if taskNumber > 0 {
 		_, key_present := file_content[taskNumber]
 		if key_present {

@@ -34,17 +34,13 @@ type apiRequest struct {
 
 func AddTask(w http.ResponseWriter, r *http.Request) {
 
-	if r.Method != http.MethodPost {
-		fmt.Println("Could identify as POST request")
-		return
-	}
-
 	var AddRequest store.ToDoItem
 
 	err := json.NewDecoder(r.Body).Decode(&AddRequest)
 	if err != nil {
 		e := fmt.Sprintf("Error - %v", err)
 		http.Error(w, e, http.StatusInternalServerError)
+		slog.ErrorContext(r.Context(), e)
 		return
 	}
 	error_resp := make(chan error)
@@ -53,6 +49,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 
 	if <-error_resp != nil {
 		http.Error(w, "Error in POST request", http.StatusBadRequest)
+		slog.ErrorContext(r.Context(), "Error in POST request")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -62,6 +59,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 	response := map[string]string{
 		"message": "Task added successfully",
 	}
+	slog.InfoContext(r.Context(), "Task added successfully")
 	json.NewEncoder(w).Encode(response)
 }
 
@@ -69,17 +67,13 @@ func DeleteTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	error_resp := make(chan error)
-	if r.Method != http.MethodDelete {
-		fmt.Println("Could identify as DELETE request")
-		return
-	}
-
+	
 	queryString, found := strings.CutPrefix(r.URL.RawQuery, "id=")
 	if !found {
 		http.Error(w, "Error in Request", http.StatusBadRequest)
 	}
 	item_delete, _ := strconv.Atoi(queryString)
-	log.Printf("item to delete = %d", item_delete)
+	slog.InfoContext(r.Context(), fmt.Sprintf("item to delete = %d", item_delete))
 
 	Requests <- apiRequest{verb: http.MethodDelete, taskID: item_delete, respError: error_resp}
 	if e:= <-error_resp; e != nil {
@@ -90,11 +84,12 @@ func DeleteTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Respond to client
-	
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	response := map[string]string{
 		"message": "Task deleted successfully",
 	}
+	slog.InfoContext(r.Context(), "Task deleted successfully")
 	json.NewEncoder(w).Encode(response)
 }
 
@@ -112,7 +107,10 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 	var updateRequest request
 	err := json.NewDecoder(r.Body).Decode(&updateRequest)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		slog.ErrorContext(r.Context(), err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	Requests <- apiRequest{verb: http.MethodPut, task: updateRequest.Task,
@@ -122,7 +120,7 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 	if e := <-error_resp; e != nil {
 		http.Error(w, "Error in POST request", http.StatusBadRequest)
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Print(e)
+		slog.ErrorContext(r.Context(), e.Error())
 		return
 	}
 	// Respond to client
@@ -131,6 +129,7 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 	response := map[string]string{
 		"message": "Task updated successfully",
 	}
+	slog.InfoContext(r.Context(), "Task updated successfully")
 	json.NewEncoder(w).Encode(response)
 }
 
@@ -148,16 +147,16 @@ func ListHandler(w http.ResponseWriter, r *http.Request) {
 	if e := <-errChan; e != nil {
 		http.Error(w, "Error in POST request", http.StatusBadRequest)
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Print(e)
+		slog.ErrorContext(r.Context(), e.Error())
 		return
 	}
+	slog.InfoContext(r.Context(), "Tasks listing")
 	w.WriteHeader(http.StatusOK)
 
 	//Render in html page
-
 	tasks, ok := result.(map[int]store.ToDoItem)
 	if !ok {
-		log.Println("Error in list received")
+		slog.ErrorContext(r.Context(), "Error in list received")
 		http.Error(w, "Internal Server error", http.StatusInternalServerError)
 		return
 	}
@@ -165,13 +164,15 @@ func ListHandler(w http.ResponseWriter, r *http.Request) {
 
 	tmp, e := template.ParseFiles("api/template/template.html")
 	if e != nil {
-		log.Printf("Error parse file- %v", e)
-		http.Error(w, e.Error(), http.StatusInternalServerError)
+		e:=fmt.Sprintf("Error parse file- %v", e)
+		slog.ErrorContext(r.Context(),e)
+		http.Error(w, e, http.StatusInternalServerError)
 		return
 	}
 	err := tmp.Execute(w, tasks)
 	if err != nil {
-		log.Printf("Error Execute file- %v", err)
+		e:=fmt.Sprintf("Error Execute file- %v", err)
+		slog.ErrorContext(r.Context(),e)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -238,10 +239,8 @@ func processRequests(ctx context.Context, Requests <-chan apiRequest) {
 				log.Printf("Unidentifiable http method")
 			}
 		}
-
 }()
 }
-
 
 func main() {
 	handlerOpts := &slog.HandlerOptions{

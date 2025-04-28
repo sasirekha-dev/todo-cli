@@ -4,6 +4,36 @@
 <title>TODO application</title>
 </head>
 <body>
-    Welcome to TODO App !!
+    <h1>Welcome to TODO App !!</h1>
+    <p>
+        Welcome to the TODO Application — a simple, clean, and efficient way to manage your tasks.
+        This project is built with Go and designed for speed, simplicity, and reliability.
+    </p>
+    <h2>Features</h2>
+    <ul>
+        <li>Create new tasks </li>
+        <li>Track task status (e.g., not started, started, completed).</li>
+        <li>Delete tasks you no longer need.</li>
+        <li>Real-time updates with clean storage using JSON files.</li>
+        <li>Designed to handle concurrent operations safely.</li>
+    </ul>
+    <h2>Run in two modes CLI and API</h2>
+    <h3>To send requests in CLI mode, follow below steps</h3>
+    <ul>
+        <li>Add - ```go run cli\main.go --add="task" --status="started"```</li>
+        <li>Update- ```go run cli\main.go --update=1 --task="task" --status="completed"```</li>
+        <li>Delete- ```go run cli\main.go --delete=1```</li>
+        <li>**Note** Logger is setup to save the logs in a log file. Hence it is required to set the environment variable 
+            ```set LOG_FILE=app.log```
+        </li>
+    </ul>
+    <h3>To send requests in API mode</h3>
+    <ul>
+        <li>Add - <a href="http//localhost:8080/add">http//localhost:8080/add</a> with body of request as ```{"task": "foo", "status":"started"}```</li>
+        <li>Update- <a href="http://localhost:8080/update">http://localhost:8080/update</a> with body as ```{"index":1, "task":"foo", "status":"completed"}```</li>
+        <li>Delete- <a href="//localhost:8080/delete?id=1">http://localhost:8080/delete?id=1</a></li>
+        <li>List - <a href="//localhost:8080/list">http://localhost:8080/list</a></li>
+    </ul>
+
 </body>
 </html>

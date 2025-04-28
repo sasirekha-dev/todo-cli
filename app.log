@@ -171,3 +171,28 @@
 {"time":"2025-04-11T12:23:50.9349502+01:00","level":"INFO","msg":"Received interrupt","traceID:":"ad48008e-9431-42d7-a3eb-aa07bbbf032a"}
 {"time":"2025-04-21T15:21:22.5163324+01:00","level":"INFO","msg":"List all Tasks","traceID:":"1d593aae-7134-4bcc-ab77-2d10d13e11ec"}
 {"time":"2025-04-21T15:21:33.4439675+01:00","level":"INFO","msg":"Received interrupt","traceID:":"1d593aae-7134-4bcc-ab77-2d10d13e11ec"}
+{"time":"2025-04-28T09:48:26.5136381+01:00","level":"INFO","msg":"List all Tasks","traceID:":"5207e814-c811-4b7b-b705-ee1474866d6b"}
+{"time":"2025-04-28T09:49:03.965176+01:00","level":"INFO","msg":"Received interrupt","traceID:":"5207e814-c811-4b7b-b705-ee1474866d6b"}
+{"time":"2025-04-28T09:49:27.4137543+01:00","level":"INFO","msg":"List all Tasks","traceID:":"cae72273-c2ac-424b-a608-1250cb19c696"}
+{"time":"2025-04-28T09:49:34.9255323+01:00","level":"INFO","msg":"Received interrupt","traceID:":"cae72273-c2ac-424b-a608-1250cb19c696"}
+{"time":"2025-04-28T09:49:45.7826976+01:00","level":"INFO","msg":"List all Tasks","traceID:":"2cd9b572-66c4-4735-b63e-62a8d6b0508a"}
+{"time":"2025-04-28T09:49:45.7837459+01:00","level":"INFO","msg":"Saving to file","Filename":"database\\list.json","traceID:":"2cd9b572-66c4-4735-b63e-62a8d6b0508a"}
+{"time":"2025-04-28T09:49:45.7837459+01:00","level":"INFO","msg":"Add Task","task":"Task-cli with status-started","traceID:":"2cd9b572-66c4-4735-b63e-62a8d6b0508a"}
+{"time":"2025-04-28T09:50:05.3705574+01:00","level":"INFO","msg":"Received interrupt","traceID:":"2cd9b572-66c4-4735-b63e-62a8d6b0508a"}
+{"time":"2025-04-28T09:55:09.2445425+01:00","level":"INFO","msg":"List all Tasks","traceID:":"d96cc4ac-b6d3-43a2-a271-a576dadd6ca3"}
+{"time":"2025-04-28T09:55:09.245616+01:00","level":"INFO","msg":"Saving to file","Filename":"database\\list.json","traceID:":"d96cc4ac-b6d3-43a2-a271-a576dadd6ca3"}
+{"time":"2025-04-28T09:55:09.2461484+01:00","level":"INFO","msg":"Update Task","task":"Task- with status-completed","traceID:":"d96cc4ac-b6d3-43a2-a271-a576dadd6ca3"}
+{"time":"2025-04-28T09:55:23.0451425+01:00","level":"INFO","msg":"Received interrupt","traceID:":"d96cc4ac-b6d3-43a2-a271-a576dadd6ca3"}
+{"time":"2025-04-28T09:55:34.0172736+01:00","level":"INFO","msg":"List all Tasks","traceID:":"c44708be-28dc-4c92-8485-65a9fba628aa"}
+{"time":"2025-04-28T09:55:34.0183077+01:00","level":"INFO","msg":"Saving to file","Filename":"database\\list.json","traceID:":"c44708be-28dc-4c92-8485-65a9fba628aa"}
+{"time":"2025-04-28T09:55:34.0183077+01:00","level":"INFO","msg":"Delete Task","task":"cli","status":"completed","traceID:":"c44708be-28dc-4c92-8485-65a9fba628aa"}
+{"time":"2025-04-28T09:55:34.0183077+01:00","level":"INFO","msg":"context.Background.WithValue(trace-id, c44708be-28dc-4c92-8485-65a9fba628aa)"}
+{"time":"2025-04-28T10:04:47.2449998+01:00","level":"INFO","msg":"Received interrupt","traceID:":"c44708be-28dc-4c92-8485-65a9fba628aa"}
+{"time":"2025-04-28T10:04:54.475984+01:00","level":"INFO","msg":"List all Tasks","traceID:":"bc3ca065-b15b-45ac-a7ee-81d075dd98e6"}
+{"time":"2025-04-28T10:07:20.3447469+01:00","level":"INFO","msg":"Received interrupt","traceID:":"bc3ca065-b15b-45ac-a7ee-81d075dd98e6"}
+{"time":"2025-04-28T10:07:24.1717065+01:00","level":"INFO","msg":"List all Tasks","traceID:":"e8404f68-d3b4-418d-b105-47f9716bdec0"}
+{"time":"2025-04-28T10:07:34.8136701+01:00","level":"INFO","msg":"Received interrupt","traceID:":"e8404f68-d3b4-418d-b105-47f9716bdec0"}
+{"time":"2025-04-28T10:07:38.3915187+01:00","level":"INFO","msg":"List all Tasks","traceID:":"bb79baaf-543f-4d32-9fa3-0806dde039ac"}
+{"time":"2025-04-28T10:07:47.8639504+01:00","level":"INFO","msg":"Received interrupt","traceID:":"bb79baaf-543f-4d32-9fa3-0806dde039ac"}
+{"time":"2025-04-28T12:06:26.9899498+01:00","level":"INFO","msg":"List all Tasks","traceID:":"a4c31792-23b3-4552-af84-56a38f88b533"}
+{"time":"2025-04-28T12:06:42.0799477+01:00","level":"INFO","msg":"Received interrupt","traceID:":"a4c31792-23b3-4552-af84-56a38f88b533"}

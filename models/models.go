@@ -5,4 +5,4 @@ package models
 
 // var TraceID TraceIDKey
 
-const TraceID string = "trace-id"
+const TraceID = "trace-id"

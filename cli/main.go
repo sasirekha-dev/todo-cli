@@ -78,11 +78,9 @@ func main() {
 	default:
 		fmt.Println("Listing the items...")
 		for i := range store.ToDoItems {
-			fmt.Printf("%d: Task: %s, Status: %s \n", i, store.ToDoItems[i].Task, store.ToDoItems[i].Status)
+			fmt.Printf("%d. Task: %s, Status: %s \n", i, store.ToDoItems[i].Task, store.ToDoItems[i].Status)
 		}
-
-	}	
-	
+	}
 	
 	done:= make(chan bool)
 	//create a cancel channel

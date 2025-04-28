@@ -42,18 +42,18 @@ status or delete it entirely. Feel free to add any additional functionality if y
 - Use Parallel tests to validate that the solution is concurrent safe
 
 To send requests in CLI mode, follow below steps
-Add - ```go run cli\main.go --add="task" --status="started"```
-Update- ```go run cli\main.go --update=1 --task="task" --status="completed"```
-Delete- ```go run cli\main.go --delete=1```
+- Add - ```go run cli\main.go --add="task" --status="started"```
+- Update- ```go run cli\main.go --update=1 --task="task" --status="completed"```
+- Delete- ```go run cli\main.go --delete=1```
 **Note** Logger is setup to save the logs in a log file. Hence it is required to set the environment variable 
 ```set LOG_FILE=app.log```
 
 
 To run in API mode
-Add - ```http://localhost:8080/add``` with body of request as ```{"task": "foo", "status":"started"}```
-Update- ```http://localhost:8080/update``` with body as ```{"index":1, "task":"foo", "status":"completed"}```
-Delete- ```http://localhost:8080/delete?id=1```
-List - ```http://localhost:8080/list```
+- Add - ```http://localhost:8080/add``` with body of request as ```{"task": "foo", "status":"started"}```
+- Update- ```http://localhost:8080/update``` with body as ```{"index":1, "task":"foo", "status":"completed"}```
+- Delete- ```http://localhost:8080/delete?id=1```
+- List - ```http://localhost:8080/list```
 This endpoint lists all the tasks from the database as HTML page
-About - ```http:localhost:8080/about/about.html``` Displays a static webpage  
+- About - ```http:localhost:8080/about/about.html``` Displays a static webpage  
 

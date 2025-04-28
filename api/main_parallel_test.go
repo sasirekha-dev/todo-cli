@@ -9,84 +9,92 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"sync"
 
 	"testing"
 
+	"github.com/sasirekha-dev/go2.0/models"
 	"github.com/sasirekha-dev/go2.0/store"
 )
-
-func TestParallel(t *testing.T) {
+func TestParallelOptimized(t *testing.T) {
 	tempFile, err := os.CreateTemp("", "test_*.json")
 	if err != nil {
 		log.Fatalf("Error creating temp file")
 	}
 	defer os.Remove(tempFile.Name())
 	store.Filename = tempFile.Name()
-	ctx, _ := context.WithCancel(context.Background())
+	ctx := context.WithValue(context.Background(), models.TraceID, "test")
 	StartActor(ctx)
-	numItemsAdd := 2
 
+	numItemsAdd := 10
+
+	var wg sync.WaitGroup
+
+	
+	wg.Add(numItemsAdd)
 	for i := 0; i < numItemsAdd; i++ {
-		task := fmt.Sprintf("AddTask-%d", i)
-		t.Run(task, func(t *testing.T) {
-			t.Parallel()
-			newTask := store.ToDoItem{Task: task, Status: "started"}
+		go func(i int) {  
+			defer wg.Done()
+
+			newTask := store.ToDoItem{Task: fmt.Sprintf("AddTask-%d", i), Status: "started"}
 			body, _ := json.Marshal(newTask)
 			req := httptest.NewRequest(http.MethodPost, "/add", bytes.NewBuffer(body))
 			req = req.WithContext(context.Background())
 			req.Header.Set("Content-Type", "application/json")
 
 			reqRecorder := httptest.NewRecorder()
-			t.Log("Add request called....")
 			AddTask(reqRecorder, req)
 
 			if reqRecorder.Code != http.StatusCreated {
 				t.Errorf("Expected status code-201 got %d", reqRecorder.Code)
 			}
-		})
+		}(i)
 	}
-	for i := 1; i < numItemsAdd+1; i++ {
-		task := fmt.Sprintf("UpdateTask-%d", i)
-		t.Run(task, func(t *testing.T) {
-			t.Parallel()
+	wg.Wait() 
+	
+	wg.Add(numItemsAdd)
+	for i := 1; i <= numItemsAdd; i++ {
+		go func(i int) {
+			defer wg.Done()
+
 			updateTask := map[string]any{
 				"index":  i,
-				"task":   task,
+				"task":   fmt.Sprintf("UpdateTask-%d", i),
 				"status": "completed",
 			}
 			body, _ := json.Marshal(updateTask)
-			req := httptest.NewRequest(http.MethodPost, "/update", bytes.NewBuffer(body))
+			req := httptest.NewRequest(http.MethodPut, "/update", bytes.NewBuffer(body))
 			req = req.WithContext(context.Background())
 			req.Header.Set("Content-Type", "application/json")
 
 			reqRecorder := httptest.NewRecorder()
-			t.Log("Update request called....")
 			UpdateTask(reqRecorder, req)
 
 			if reqRecorder.Code != http.StatusOK {
 				t.Errorf("Expected status code-200 got %d", reqRecorder.Code)
 			}
-		})
+		}(i)
 	}
-	for i := 1; i < numItemsAdd+1; i++ {
-		task := fmt.Sprintf("UpdateTask-%d", i)
-		t.Run(task, func(t *testing.T) {
-			t.Parallel()
-			deleteReq := fmt.Sprintf("/delete?id=%d",i)
+	wg.Wait() 
+	
+	wg.Add(numItemsAdd)
+	for i := 1; i <= numItemsAdd; i++ {
+		go func(i int) {
+			defer wg.Done()
 
-			req := httptest.NewRequest(http.MethodPost, deleteReq, nil)
+			deleteReq := fmt.Sprintf("/delete?id=%d", i)
+			req := httptest.NewRequest(http.MethodDelete, deleteReq, nil)
 			req = req.WithContext(context.Background())
 			req.Header.Set("Content-Type", "application/json")
 
 			reqRecorder := httptest.NewRecorder()
-			t.Log("Delete request called....")
 			DeleteTask(reqRecorder, req)
 
 			if reqRecorder.Code != http.StatusOK {
 				t.Errorf("Expected status code-200 got %d", reqRecorder.Code)
 			}
-		})
+		}(i)
 	}
-
-	
+	wg.Wait() 
 }
+

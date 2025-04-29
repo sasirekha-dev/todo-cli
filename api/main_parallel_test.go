@@ -98,3 +98,35 @@ func TestParallelOptimized(t *testing.T) {
 	wg.Wait() 
 }
 
+func BenchmarkTodoAdd(b *testing.B) {
+	tempFile, err := os.CreateTemp("", "bench_*.json")
+	if err != nil {
+		b.Fatalf("Error creating temp file: %v", err)
+	}
+	defer os.Remove(tempFile.Name())
+
+	store.Filename = tempFile.Name()
+	ctx := context.WithValue(context.Background(), models.TraceID, "bench-test")
+	StartActor(ctx)
+
+	// Reset timer to ignore setup time
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		newTask := store.ToDoItem{
+			Task:   fmt.Sprintf("Task-%d", i),
+			Status: "started",
+		}
+		body, _ := json.Marshal(newTask)
+		req := httptest.NewRequest(http.MethodPost, "/add", bytes.NewBuffer(body))
+		req = req.WithContext(context.Background())
+		req.Header.Set("Content-Type", "application/json")
+
+		reqRecorder := httptest.NewRecorder()
+		AddTask(reqRecorder, req)
+
+		if reqRecorder.Code != http.StatusCreated {
+			b.Errorf("Failed to add task at %d: got status %d", i, reqRecorder.Code)
+		}
+	}
+}

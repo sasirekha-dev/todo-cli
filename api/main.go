@@ -22,21 +22,25 @@ var Requests chan apiRequest
 var Done chan struct{}
 var ctx context.Context
 
+type apiResponse struct {
+	retVal any
+	err    error
+}
+
 type apiRequest struct {
-	verb      string
-	task      string
-	status    string
-	taskID    int
-	resp      chan any
-	respError chan error
-	ctx       context.Context
+	verb   string
+	task   string
+	status string
+	taskID int
+	resp   chan apiResponse
+	ctx    context.Context
 }
 
 func AddTask(w http.ResponseWriter, r *http.Request) {
 
 	var AddRequest store.ToDoItem
 	if r.Method != http.MethodPost {
-		slog.ErrorContext(r.Context(),"Could identify as POST request")
+		slog.ErrorContext(r.Context(), "Could identify as POST request")
 		return
 	}
 
@@ -47,11 +51,13 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 		slog.ErrorContext(r.Context(), e)
 		return
 	}
-	error_resp := make(chan error)
-	Requests <- apiRequest{verb: http.MethodPost, task: AddRequest.Task,
-		status: AddRequest.Status, ctx: r.Context(), respError: error_resp}
+	respChan := make(chan apiResponse)
 
-	if <-error_resp != nil {
+	Requests <- apiRequest{verb: http.MethodPost, task: AddRequest.Task,
+		status: AddRequest.Status, ctx: r.Context(), resp: respChan}
+
+	resp := <-respChan
+	if resp.err != nil {
 		http.Error(w, "Error in POST request", http.StatusBadRequest)
 		slog.ErrorContext(r.Context(), "Error in POST request")
 		w.WriteHeader(http.StatusBadRequest)
@@ -69,26 +75,25 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 
 func DeleteTask(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
-		slog.ErrorContext(r.Context(),"Could identify as DELETE request")
+		slog.ErrorContext(r.Context(), "Could identify as DELETE request")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 
-	error_resp := make(chan error)
-	
 	queryString, found := strings.CutPrefix(r.URL.RawQuery, "id=")
 	if !found {
 		http.Error(w, "Error in Request", http.StatusBadRequest)
 	}
 	item_delete, _ := strconv.Atoi(queryString)
 	slog.InfoContext(r.Context(), fmt.Sprintf("item to delete = %d", item_delete))
-
-	Requests <- apiRequest{verb: http.MethodDelete, taskID: item_delete, respError: error_resp}
-	if e:= <-error_resp; e != nil {
-		slog.ErrorContext(r.Context(), e.Error())
+	respChan := make(chan apiResponse)
+	Requests <- apiRequest{verb: http.MethodDelete, taskID: item_delete, resp: respChan}
+	ret := <-respChan
+	if ret.err != nil {
+		slog.ErrorContext(r.Context(), ret.err.Error())
 		http.Error(w, "Error in DELETE request", http.StatusBadRequest)
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"message": e.Error()})
+		json.NewEncoder(w).Encode(map[string]string{"message": ret.err.Error()})
 		return
 	}
 	// Respond to client
@@ -102,9 +107,9 @@ func DeleteTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateTask(w http.ResponseWriter, r *http.Request) {
-	error_resp := make(chan error)
+
 	if r.Method != http.MethodPut {
-		slog.ErrorContext(r.Context(),"Could identify as PUT request")
+		slog.ErrorContext(r.Context(), "Could identify as PUT request")
 		return
 	}
 	type request struct {
@@ -120,15 +125,17 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	respChan := make(chan apiResponse)
 	Requests <- apiRequest{verb: http.MethodPut, task: updateRequest.Task,
 		status: updateRequest.Status, taskID: updateRequest.Index,
-		ctx: r.Context(), respError: error_resp}
+		ctx: r.Context(), resp: respChan}
 
-	if e := <-error_resp; e != nil {
+		ret:= <-respChan
+
+	if ret.err != nil {
 		http.Error(w, "Error in POST request", http.StatusBadRequest)
 		w.WriteHeader(http.StatusInternalServerError)
-		slog.ErrorContext(r.Context(), e.Error())
+		slog.ErrorContext(r.Context(), ret.err.Error())
 		return
 	}
 	// Respond to client
@@ -142,27 +149,27 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func ListHandler(w http.ResponseWriter, r *http.Request) {
-	errChan := make(chan error)
-	responseChan := make(chan any)
+
+	responseChan := make(chan apiResponse)
 
 	if r.Method != http.MethodGet {
-		slog.ErrorContext(r.Context(),"Could identify as GET request")
+		slog.ErrorContext(r.Context(), "Could identify as GET request")
 		return
 	}
 
-	Requests <- apiRequest{verb: http.MethodGet, resp: responseChan, respError: errChan}
+	Requests <- apiRequest{verb: http.MethodGet, resp: responseChan}
 	result := <-responseChan
-	if e := <-errChan; e != nil {
+	if result.err != nil {
 		http.Error(w, "Error in POST request", http.StatusBadRequest)
 		w.WriteHeader(http.StatusInternalServerError)
-		slog.ErrorContext(r.Context(), e.Error())
+		slog.ErrorContext(r.Context(), result.err.Error())
 		return
 	}
 	slog.InfoContext(r.Context(), "Tasks listing")
 	w.WriteHeader(http.StatusOK)
 
 	//Render in html page
-	tasks, ok := result.(map[int]store.ToDoItem)
+	tasks, ok := result.retVal.(map[int]store.ToDoItem)
 	if !ok {
 		slog.ErrorContext(r.Context(), "Error in list received")
 		http.Error(w, "Internal Server error", http.StatusInternalServerError)
@@ -172,15 +179,15 @@ func ListHandler(w http.ResponseWriter, r *http.Request) {
 
 	tmp, e := template.ParseFiles("api/template/template.html")
 	if e != nil {
-		e:=fmt.Sprintf("Error parse file- %v", e)
-		slog.ErrorContext(r.Context(),e)
+		e := fmt.Sprintf("Error parse file- %v", e)
+		slog.ErrorContext(r.Context(), e)
 		http.Error(w, e, http.StatusInternalServerError)
 		return
 	}
 	err := tmp.Execute(w, tasks)
 	if err != nil {
-		e:=fmt.Sprintf("Error Execute file- %v", err)
-		slog.ErrorContext(r.Context(),e)
+		e := fmt.Sprintf("Error Execute file- %v", err)
+		slog.ErrorContext(r.Context(), e)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -223,43 +230,41 @@ func processRequests(ctx context.Context, Requests <-chan apiRequest) {
 		defer store.Close(file) //Closes the database connection
 		defer log.Print("Exiting the process go routine...")
 
-		for req := range Requests{
+		for req := range Requests {
 			switch req.verb {
 			case http.MethodDelete:
 				log.Println("delete request received")
 				index := req.taskID
-				err:=store.DeleteTask(index, req.ctx)
-				req.respError <- err
+				err := store.DeleteTask(index, req.ctx)
+				req.resp <- apiResponse{nil, err}
 			case http.MethodGet:
 				log.Println("get request received")
 				tasks, err := store.Read(req.ctx)
-				req.resp <- tasks
-				req.respError<-err
+				req.resp <- apiResponse{tasks, err}
 			case http.MethodPost:
 				log.Println("Post request received")
 				err := store.Add(req.task, req.status, req.ctx)
-				req.respError <- err
+				req.resp <- apiResponse{nil, err}
 			case http.MethodPut:
 				log.Println("put request received")
-				err:=store.Update(req.task, req.status, req.taskID, req.ctx)
-				req.respError<-err
+				err := store.Update(req.task, req.status, req.taskID, req.ctx)
+				req.resp <- apiResponse{nil, err}
 			default:
 				log.Printf("Unidentifiable http method")
 			}
 		}
-}()
+	}()
 }
 
 func main() {
 	handlerOpts := &slog.HandlerOptions{
 		AddSource: true,
-		Level: slog.LevelDebug,
+		Level:     slog.LevelDebug,
 	}
 	jsonHandler := slog.NewJSONHandler(os.Stderr, handlerOpts)
 	NewHandler := &TraceIDHandle{jsonHandler}
 	logger := slog.New(NewHandler)
 	slog.SetDefault(logger)
-
 
 	log.Println("Starting server and listening at :8080...")
 	mux := http.NewServeMux()

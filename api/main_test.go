@@ -33,10 +33,10 @@ func TestAddHandler(t *testing.T) {
 
 	reqRecorder := httptest.NewRecorder()
 	// Start the actor first
-	ctx,_:=context.WithCancel(context.Background())
+	ctx, cancel:=context.WithCancel(context.Background())
 	StartActor(ctx)
 	defer func() {
-		close(Requests)
+		cancel()
 		<-Done
 	}()
 	AddTask(reqRecorder, req)
@@ -57,10 +57,10 @@ func TestUpdate(t *testing.T){
 	req := httptest.NewRequest(http.MethodPut, "/update", bytes.NewBuffer(body))
 	req = req.WithContext(context.Background())
 	reqRecorder := httptest.NewRecorder()
-	ctx,_:=context.WithCancel(context.Background())
+	ctx,cancel:=context.WithCancel(context.Background())
 	StartActor(ctx)
 	defer func() {
-		close(Requests)
+		cancel()
 		<-Done
 	}()
 	UpdateTask(reqRecorder, req)
@@ -74,10 +74,10 @@ func TestListHandler(t *testing.T){
 	req := httptest.NewRequest(http.MethodGet, "/list", nil)
 	req = req.WithContext(context.Background())
 	reqRecorder := httptest.NewRecorder()
-	ctx,_:=context.WithCancel(context.Background())
+	ctx,cancel:=context.WithCancel(context.Background())
 	StartActor(ctx)
 	defer func() {
-		close(Requests)
+		cancel()
 		<-Done
 	}()
 	ListHandler(reqRecorder, req)
@@ -94,11 +94,11 @@ func TestDeleteHandler(t *testing.T) {
 
 	reqRecorder := httptest.NewRecorder()
 	
-	ctx,_ :=context.WithCancel(context.Background())
+	ctx,cancel :=context.WithCancel(context.Background())
 	
 	StartActor(ctx)
 	defer func() {
-		close(Requests)
+		cancel()
 		<-Done
 	}()
 	DeleteTask(reqRecorder, req)

@@ -20,7 +20,7 @@ import (
 
 var Requests chan apiRequest
 var Done chan struct{}
-var ctx context.Context
+// var ctx context.Context
 
 type apiResponse struct {
 	retVal any
@@ -130,7 +130,7 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 		status: updateRequest.Status, taskID: updateRequest.Index,
 		ctx: r.Context(), resp: respChan}
 
-		ret:= <-respChan
+	ret := <-respChan
 
 	if ret.err != nil {
 		http.Error(w, "Error in POST request", http.StatusBadRequest)
@@ -230,27 +230,37 @@ func processRequests(ctx context.Context, Requests <-chan apiRequest) {
 		defer store.Close(file) //Closes the database connection
 		defer log.Print("Exiting the process go routine...")
 
-		for req := range Requests {
-			switch req.verb {
-			case http.MethodDelete:
-				log.Println("delete request received")
-				index := req.taskID
-				err := store.DeleteTask(index, req.ctx)
-				req.resp <- apiResponse{nil, err}
-			case http.MethodGet:
-				log.Println("get request received")
-				tasks, err := store.Read(req.ctx)
-				req.resp <- apiResponse{tasks, err}
-			case http.MethodPost:
-				log.Println("Post request received")
-				err := store.Add(req.task, req.status, req.ctx)
-				req.resp <- apiResponse{nil, err}
-			case http.MethodPut:
-				log.Println("put request received")
-				err := store.Update(req.task, req.status, req.taskID, req.ctx)
-				req.resp <- apiResponse{nil, err}
-			default:
-				log.Printf("Unidentifiable http method")
+		for {
+			select {
+			case req, ok := <-Requests:
+				if !ok {
+					log.Print("Request channel is closed...")
+				}
+				switch req.verb {
+				case http.MethodDelete:
+					log.Println("delete request received")
+					index := req.taskID
+					err := store.DeleteTask(index, req.ctx)
+					req.resp <- apiResponse{nil, err}
+				case http.MethodGet:
+					log.Println("get request received")
+					tasks, err := store.Read(req.ctx)
+					req.resp <- apiResponse{tasks, err}
+				case http.MethodPost:
+					log.Println("Post request received")
+					err := store.Add(req.task, req.status, req.ctx)
+					req.resp <- apiResponse{nil, err}
+				case http.MethodPut:
+					log.Println("put request received")
+					err := store.Update(req.task, req.status, req.taskID, req.ctx)
+					req.resp <- apiResponse{nil, err}
+				default:
+					log.Printf("Unidentifiable http method")
+
+				}
+			case <-ctx.Done():
+				slog.InfoContext(ctx, "Context is closing")
+				return
 			}
 		}
 	}()
@@ -284,7 +294,7 @@ func main() {
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
-
+	ctx, cancel := context.WithCancel(context.Background())
 	StartActor(ctx)
 	go func() {
 		err := server.ListenAndServe()
@@ -294,7 +304,7 @@ func main() {
 	}()
 
 	<-quit
-	close(Requests)
+	cancel()
 	<-Done
 	log.Printf("Received shutdown on ctrl+c")
 }

@@ -45,6 +45,7 @@ func Save(data map[int]ToDoItem, ctx context.Context) error {
 
 func Load() map[int]ToDoItem {
 	var data map[int]ToDoItem
+	log.Print(Filename)
 	file, e := os.Open(Filename)
 	if e!=nil{
 		log.Fatalf("Failed to read from file: %v", e)

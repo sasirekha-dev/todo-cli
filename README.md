@@ -41,6 +41,9 @@ status or delete it entirely. Feel free to add any additional functionality if y
 - Use the Actor/Communicating Sequential Processes (CSP) pattern to support concurrent reads and concurrent safe write
 - Use Parallel tests to validate that the solution is concurrent safe
 
+6) **Repl**
+- When the application runs it should ask the user to input text into the console to create, read, update, or delete list items in a loop.
+
 To send requests in CLI mode, follow below steps
 - Add - ```go run cli\main.go --add="task" --status="started"```
 - Update- ```go run cli\main.go --update=1 --task="task" --status="completed"```

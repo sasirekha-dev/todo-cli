@@ -19,7 +19,7 @@ type ToDoItem struct {
 	Status string `json:"status"`
 }
 
-var ToDoItems map[int]ToDoItem
+var ToDoItems map[string]map[int]ToDoItem
 
 type errorMsg string
 
@@ -27,9 +27,10 @@ func (t ToDoItem) LogValue() slog.Value {
 	return slog.StringValue(fmt.Sprintf("Task-%s with status-%s", t.Task, t.Status))
 }
 
-func Save(data map[int]ToDoItem, ctx context.Context) error {
-
-	bytes, err:= json.Marshal(data)
+func Save(userid string, data map[int]ToDoItem, ctx context.Context) error {
+	content := LoadContent()
+	content[userid]=data
+	bytes, err:= json.Marshal(content)
 	if err!=nil{
 		slog.ErrorContext(ctx, "Error with json data")
 		return nil
@@ -43,47 +44,73 @@ func Save(data map[int]ToDoItem, ctx context.Context) error {
 	return nil
 }
 
-func Load() map[int]ToDoItem {
-	var data map[int]ToDoItem
+func LoadContent()map[string]map[int]ToDoItem{
+	var content map[string]map[int]ToDoItem
+	file, e := os.Open(Filename)
+	if e!=nil{
+		log.Fatalf("Failed to read from file: %v", e)
+	}
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&content); err != nil {
+		if err.Error() == "EOF" {
+			log.Println("EOF reached...")
+			return make(map[string]map[int]ToDoItem)
+		}
+		log.Fatalf("Failed to read from file: %v", err)
+	}
+	return content
+}
+
+func Load(userid string)  (map[int]ToDoItem){
+	var content map[string]map[int]ToDoItem
 	log.Print(Filename)
 	file, e := os.Open(Filename)
 	if e!=nil{
 		log.Fatalf("Failed to read from file: %v", e)
 	}
 	decoder := json.NewDecoder(file)
-	if err := decoder.Decode(&data); err != nil {
+	if err := decoder.Decode(&content); err != nil {
 		if err.Error() == "EOF" {
 			log.Println("EOF reached...")
 			return make(map[int]ToDoItem)
 		}
 		log.Fatalf("Failed to read from file: %v", err)
 	}
+	data, found:= content[userid]
+	if !found{
+		return make(map[int]ToDoItem)
+	}
 	return data
 }
 
-func Read(ctx context.Context) (map[int]ToDoItem, error) {
-	var data map[int]ToDoItem
-	file, e := os.Open(Filename)
-	if e!=nil{
-		log.Fatalf("Failed to read from file: %v", e)
-		return nil, e
-	}
-	decoder := json.NewDecoder(file)
-	if err := decoder.Decode(&data); err != nil {
-		if err.Error() == "EOF" {
-			log.Println("EOF reached...")
-			return make(map[int]ToDoItem), nil
-		}
-		log.Fatalf("Failed to read from file: %v", err)
-		return nil, err
-	}
+func Read(userid string, ctx context.Context) (map[int]ToDoItem, error) {
+
+	data := Load(userid)
+	// file, e := os.Open(Filename)
+	// if e!=nil{
+	// 	log.Fatalf("Failed to read from file: %v", e)
+	// 	return nil, e
+	// }
+	// decoder := json.NewDecoder(file)
+	// if err := decoder.Decode(&content); err != nil {
+	// 	if err.Error() == "EOF" {
+	// 		log.Println("EOF reached...")
+	// 		return make(map[int]ToDoItem), nil
+	// 	}
+	// 	log.Fatalf("Failed to read from file: %v", err)
+	// 	return nil, err
+	// }
+
 	slog.InfoContext(ctx, "List all Tasks")
 	return data, nil
 }
 
-func Add(insertData string, status string, ctx context.Context) error{
+func Add(insertData string, status string, userid string, ctx context.Context) error{
+	//get data related to user
+	ToDoItems:=Load(userid)
 
-	ToDoItems := Load()
+
+
 	maxKey:=0
 	for id:= range ToDoItems{
 		if id>maxKey{
@@ -94,7 +121,7 @@ func Add(insertData string, status string, ctx context.Context) error{
 		newToDoItem := ToDoItem{insertData, status}
 		ToDoItems[maxKey+1] = newToDoItem
 
-		err := Save(ToDoItems, ctx)
+		err := Save(userid,ToDoItems, ctx)
 		if err!=nil{
 			return err
 		}
@@ -107,15 +134,15 @@ func (error_msg errorMsg) Error() string {
 	return string(error_msg)
 }
 
-func DeleteTask(taskNumber int, ctx context.Context) error {
-	file_content := Load()
+func DeleteTask(userid string, taskNumber int, ctx context.Context) error {
+	file_content := Load(userid)
 
 	if taskNumber > 0 {
 		_, key_present := file_content[taskNumber]
 		if key_present {
 			del_task := file_content[taskNumber]
 			delete(file_content, taskNumber)
-			Save(file_content, ctx)		
+			Save(userid, file_content, ctx)		
 			slog.InfoContext(ctx, "Delete Task", "task", del_task.Task, "status", del_task.Status)
 			log.Print(ctx)
 		} else {
@@ -127,8 +154,8 @@ func DeleteTask(taskNumber int, ctx context.Context) error {
 }
 
 
-func Update(task string, status string, index int, ctx context.Context) error {
-	ToDoItems:= Load()
+func Update(userid string, task string, status string, index int, ctx context.Context) error {
+	ToDoItems:= Load(userid)
 	if index > 0 {
 		update_item, exists := ToDoItems[index]
 		if exists {
@@ -143,7 +170,7 @@ func Update(task string, status string, index int, ctx context.Context) error {
 			return errorMsg("Out of range")
 		}
 		ToDoItems[index] = update_item
-		Save(ToDoItems, ctx)
+		Save(userid, ToDoItems, ctx)
 		slog.InfoContext(ctx, "Update Task", "task", ToDoItem{task, status})
 	}
 	return nil

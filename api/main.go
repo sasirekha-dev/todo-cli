@@ -20,6 +20,7 @@ import (
 
 var Requests chan apiRequest
 var Done chan struct{}
+
 // var ctx context.Context
 
 type apiResponse struct {
@@ -29,6 +30,7 @@ type apiResponse struct {
 
 type apiRequest struct {
 	verb   string
+	userid string
 	task   string
 	status string
 	taskID int
@@ -43,7 +45,8 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 		slog.ErrorContext(r.Context(), "Could identify as POST request")
 		return
 	}
-
+	userid := strings.Split(r.URL.Path, "/")[2]
+	
 	err := json.NewDecoder(r.Body).Decode(&AddRequest)
 	if err != nil {
 		e := fmt.Sprintf("Error - %v", err)
@@ -54,7 +57,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 	respChan := make(chan apiResponse)
 
 	Requests <- apiRequest{verb: http.MethodPost, task: AddRequest.Task,
-		status: AddRequest.Status, ctx: r.Context(), resp: respChan}
+		status: AddRequest.Status, ctx: r.Context(), resp: respChan, userid: userid,}
 
 	resp := <-respChan
 	if resp.err != nil {
@@ -79,15 +82,18 @@ func DeleteTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-
-	queryString, found := strings.CutPrefix(r.URL.RawQuery, "id=")
-	if !found {
-		http.Error(w, "Error in Request", http.StatusBadRequest)
-	}
-	item_delete, _ := strconv.Atoi(queryString)
+	query := r.URL.Query()
+	userid := query.Get("user")
+	id := query.Get("id")
+	fmt.Println(userid)
+	// queryString, found := strings.CutPrefix(r.URL.RawQuery, "id=")
+	// if !found {
+	// 	http.Error(w, "Error in Request", http.StatusBadRequest)
+	// }
+	item_delete, _ := strconv.Atoi(id)
 	slog.InfoContext(r.Context(), fmt.Sprintf("item to delete = %d", item_delete))
 	respChan := make(chan apiResponse)
-	Requests <- apiRequest{verb: http.MethodDelete, taskID: item_delete, resp: respChan}
+	Requests <- apiRequest{verb: http.MethodDelete, taskID: item_delete, resp: respChan, userid: userid}
 	ret := <-respChan
 	if ret.err != nil {
 		slog.ErrorContext(r.Context(), ret.err.Error())
@@ -116,6 +122,7 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 		Index  int    `json:"index"`
 		Task   string `json:"task"`
 		Status string `json:"status"`
+		UserId string `json:"userid"`
 	}
 	var updateRequest request
 	err := json.NewDecoder(r.Body).Decode(&updateRequest)
@@ -128,7 +135,7 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 	respChan := make(chan apiResponse)
 	Requests <- apiRequest{verb: http.MethodPut, task: updateRequest.Task,
 		status: updateRequest.Status, taskID: updateRequest.Index,
-		ctx: r.Context(), resp: respChan}
+		ctx: r.Context(), resp: respChan, userid: updateRequest.UserId}
 
 	ret := <-respChan
 
@@ -156,8 +163,11 @@ func ListHandler(w http.ResponseWriter, r *http.Request) {
 		slog.ErrorContext(r.Context(), "Could identify as GET request")
 		return
 	}
-
-	Requests <- apiRequest{verb: http.MethodGet, resp: responseChan}
+	userid := strings.Split(r.URL.Path, "/")[2]
+	if userid==""{
+		slog.ErrorContext(r.Context(), "USerid is not found")
+	}
+	Requests <- apiRequest{verb: http.MethodGet, resp: responseChan, userid: userid}
 	result := <-responseChan
 	if result.err != nil {
 		http.Error(w, "Error in POST request", http.StatusBadRequest)
@@ -240,19 +250,19 @@ func processRequests(ctx context.Context, Requests <-chan apiRequest) {
 				case http.MethodDelete:
 					log.Println("delete request received")
 					index := req.taskID
-					err := store.DeleteTask(index, req.ctx)
+					err := store.DeleteTask(req.userid, index, req.ctx)
 					req.resp <- apiResponse{nil, err}
 				case http.MethodGet:
 					log.Println("get request received")
-					tasks, err := store.Read(req.ctx)
+					tasks, err := store.Read(req.userid, req.ctx)
 					req.resp <- apiResponse{tasks, err}
 				case http.MethodPost:
 					log.Println("Post request received")
-					err := store.Add(req.task, req.status, req.ctx)
+					err := store.Add(req.task, req.status, req.userid, req.ctx)
 					req.resp <- apiResponse{nil, err}
 				case http.MethodPut:
 					log.Println("put request received")
-					err := store.Update(req.task, req.status, req.taskID, req.ctx)
+					err := store.Update(req.userid, req.task, req.status, req.taskID, req.ctx)
 					req.resp <- apiResponse{nil, err}
 				default:
 					log.Printf("Unidentifiable http method")
@@ -279,10 +289,10 @@ func main() {
 	log.Println("Starting server and listening at :8080...")
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("POST /add", AddTask)
+	mux.HandleFunc("POST /add/{userID}", AddTask)
 	mux.HandleFunc("DELETE /delete", DeleteTask)
 	mux.HandleFunc("PUT /update", UpdateTask)
-	mux.HandleFunc("GET /list", ListHandler)
+	mux.HandleFunc("GET /list/{userID}", ListHandler)
 
 	wd, _ := os.Getwd()
 	log.Println("Working directory:", wd)

@@ -11,6 +11,10 @@
         "4": {
             "task": "test code",
             "status": "started"
+        },
+        "5": {
+            "task": "test repl",
+            "status": "started"
         }
     },
     "200": {

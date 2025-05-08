@@ -50,37 +50,41 @@ func main() {
 	logger := slog.New(NewHandler)
 	slog.SetDefault(logger)
 
-	store.ToDoItems, _ = store.Read(ctx)
+	
 	
 	add := flag.String("add", "", "Todo item to add")
 	delete := flag.Int("delete", 0, "Delete a task")
 	update := flag.Int("update", 0, "update a task")
 	task := flag.String("task", "", "task description")
 	status := flag.String("status", "pending", "status of the task")
+	userid := flag.String("userid", "", "ID of user")
 
 	flag.Parse()
+	// store.ToDoItems, _ = store.Read(userid, ctx)
 
 	switch {
 	case *add != "":
-		err:= store.Add(*add, *status, ctx)
+		err:= store.Add(*add, *status, *userid, ctx)
 		if err != nil {
 			slog.ErrorContext(ctx, err.Error())
 		}
 	case *delete > 0:
-		err := store.DeleteTask(*delete, ctx)
+		err := store.DeleteTask(*userid, *delete, ctx)
 		if err != nil {
 			slog.ErrorContext(ctx, err.Error())
 		}
 
 	case *update > 0:
-		err := store.Update(*task, *status, *update, ctx)
+		err := store.Update(*userid,*task, *status, *update, ctx)
 		if err != nil {
 			slog.ErrorContext(ctx, err.Error())
 		}
 	default:
-		for i := range store.ToDoItems {
-			fmt.Printf("%d. Task: %s, Status: %s \n", i, store.ToDoItems[i].Task, store.ToDoItems[i].Status)
-		}
+		toDoList := store.Load(*userid)
+		fmt.Println(toDoList)
+		// for i := range toDoList {
+		// 	fmt.Printf("%d. Task: %s, Status: %s \n", i, store.ToDoItems[i].Task, store.ToDoItems[i].Status)
+		// }
 	}
 	
 	done:= make(chan bool)

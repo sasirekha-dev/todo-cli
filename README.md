@@ -60,3 +60,6 @@ To run in API mode
 This endpoint lists all the tasks from the database as HTML page
 - About - ```http:localhost:8080/about/about.html``` Displays a static webpage  
 
+**To test the api endpoints**
+```go install github.com/codesenberg/bombardier@latest```
+```bombardier -c 200 -n 500 http://localhost:8080/list/100```

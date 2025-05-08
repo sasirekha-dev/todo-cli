@@ -18,7 +18,9 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	for {
-
+		fmt.Println("Enter the UserID:")
+		scanner.Scan()
+		userid := scanner.Text()
 		fmt.Println("1. Add Task")
 		fmt.Println("2. Update Task")
 		fmt.Println("3. Delete Task")
@@ -35,7 +37,7 @@ func main() {
 			fmt.Println("Enter the status: ")
 			scanner.Scan()
 			status := scanner.Text()
-			if err := store.Add(task, status, ctx); err != nil {
+			if err := store.Add(task, status, userid, ctx); err != nil {
 				slog.ErrorContext(ctx, err.Error())
 			}
 		case "2":
@@ -51,7 +53,7 @@ func main() {
 			if e != nil {
 				slog.ErrorContext(ctx, "Index must be a integer value")
 			}
-			if err := store.Update(task, status, index, ctx); err != nil {
+			if err := store.Update(userid, task, status, index, ctx); err != nil {
 				slog.ErrorContext(ctx, err.Error())
 			}
 		case "3":
@@ -61,11 +63,11 @@ func main() {
 			if e != nil {
 				slog.ErrorContext(ctx, "Index must be a integer value")
 			}
-			if err := store.DeleteTask(index, ctx); err != nil {
+			if err := store.DeleteTask(userid, index, ctx); err != nil {
 				slog.ErrorContext(ctx, err.Error())
 			}
 		case "4":
-			list, e := store.Read(ctx)
+			list, e := store.Read(userid, ctx)
 			if e != nil {
 				slog.ErrorContext(ctx, e.Error())
 			}

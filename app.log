@@ -198,3 +198,7 @@
 {"time":"2025-04-28T12:06:42.0799477+01:00","level":"INFO","msg":"Received interrupt","traceID:":"a4c31792-23b3-4552-af84-56a38f88b533"}
 {"time":"2025-04-28T15:27:58.2206296+01:00","level":"INFO","msg":"List all Tasks","traceID:":"2cf27077-fa91-4420-89a9-d6642ed90984"}
 {"time":"2025-04-28T15:33:09.1231705+01:00","level":"INFO","msg":"Received interrupt","traceID:":"2cf27077-fa91-4420-89a9-d6642ed90984"}
+{"time":"2025-05-07T12:39:31.665041+01:00","level":"INFO","msg":"database\\list.json"}
+{"time":"2025-05-07T12:39:41.9418607+01:00","level":"INFO","msg":"Received interrupt","traceID:":"31bbcdbd-fbe5-4bcf-9bce-045fe5fbefb3"}
+{"time":"2025-05-07T12:39:54.7404536+01:00","level":"INFO","msg":"database\\list.json"}
+{"time":"2025-05-07T12:40:36.2205356+01:00","level":"INFO","msg":"Received interrupt","traceID:":"a41e2760-bc39-4d14-a0c5-771ba855ae81"}

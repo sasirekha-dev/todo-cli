@@ -225,7 +225,7 @@ func (th *TraceIDHandle) Handle(ctx context.Context, r slog.Record) error {
 
 func StartActor(ctx context.Context) {
 	log.Println("starting Actor")
-	Requests = make(chan apiRequest)
+	Requests = make(chan apiRequest, 500)
 	Done = make(chan struct{})
 
 	processRequests(ctx, Requests)
@@ -309,7 +309,7 @@ func main() {
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil {
-			slog.Error("Server error")
+			slog.ErrorContext(ctx, "Server error")
 		}
 	}()
 

@@ -53,7 +53,7 @@ To send requests in CLI mode, follow below steps
 
 
 To run in API mode
-- Add - ```http://localhost:8080/add``` with body of request as ```{"task": "foo", "status":"started"}```
+- Add - ```http://localhost:8080/add/100``` with body of request as ```{"task": "foo", "status":"started"}```
 - Update- ```http://localhost:8080/update``` with body as ```{"index":1, "task":"foo", "status":"completed"}```
 - Delete- ```http://localhost:8080/delete?id=1```
 - List - ```http://localhost:8080/list```
@@ -63,3 +63,4 @@ This endpoint lists all the tasks from the database as HTML page
 **To test the api endpoints**
 ```go install github.com/codesenberg/bombardier@latest```
 ```bombardier -c 200 -n 500 http://localhost:8080/list/100```
+```bombardier -c 100  -n 500 -m POST -b "{\"task\": \"foo\", \"status\":\"started\"}"   http://localhost:8080/add/100```

@@ -13,8 +13,8 @@ import (
 
 	"testing"
 
-	"github.com/sasirekha-dev/go2.0/models"
-	"github.com/sasirekha-dev/go2.0/store"
+	"github.com/sasirekha-dev/todostore/models"
+	"github.com/sasirekha-dev/todostore/store"
 )
 func TestParallelOptimized(t *testing.T) {
 	tempFile, err := os.CreateTemp("", "test_*.json")

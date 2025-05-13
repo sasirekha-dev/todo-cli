@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"strconv"
 
-	"github.com/sasirekha-dev/go2.0/store"
+	"github.com/sasirekha-dev/todostore/store"
 )
 
 func main() {

@@ -14,8 +14,8 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/sasirekha-dev/go2.0/models"
-	"github.com/sasirekha-dev/go2.0/store"
+	"github.com/sasirekha-dev/todostore/models"
+	"github.com/sasirekha-dev/todostore/store"
 )
 
 var Requests chan apiRequest
